@@ -1,16 +1,13 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { Database } from "@/types/database";
 
 /**
  * Supabase client for use in Server Components, Server Actions, and Route Handlers.
- * This is where server-side authorization checks should be layered on top of RLS —
- * never rely on RLS alone for business-critical actions (see CLAUDE.md > Authorization).
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -25,7 +22,6 @@ export async function createClient() {
             );
           } catch {
             // Called from a Server Component without a writable response.
-            // Safe to ignore if middleware refreshes sessions.
           }
         },
       },
