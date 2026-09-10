@@ -7,7 +7,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * in Server Components. This does NOT perform authorization; that
  * happens via RLS and server-side capability checks.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
