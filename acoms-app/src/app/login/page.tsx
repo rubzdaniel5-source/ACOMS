@@ -24,7 +24,7 @@ export default function LoginPage() {
       setError(error.message);
       return;
     }
-    router.push("/transfers");
+    router.push("/dashboard");
     router.refresh();
   }
 
