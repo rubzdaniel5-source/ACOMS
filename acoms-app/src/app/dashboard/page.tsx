@@ -3,11 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 
 function SummaryCard({ label, value, tone = "default" }: { label: string; value: number | string; tone?: "default" | "warning" | "danger" }) {
   const toneClass =
-    tone === "danger" ? "text-red-600" : tone === "warning" ? "text-amber-600" : "text-slate-900";
+    tone === "danger" ? "text-(--brick)" : tone === "warning" ? "text-(--amber)" : "text-(--navy)";
   return (
-    <div className="rounded-lg border border-slate-200 p-4">
-      <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div>
-      <div className={`mt-1 text-2xl font-semibold ${toneClass}`}>{value}</div>
+    <div className="panel p-4">
+      <div className="text-xs font-medium uppercase tracking-wide text-(--steel)">{label}</div>
+      <div className={`id-code mt-1 text-2xl font-semibold ${toneClass}`}>{value}</div>
     </div>
   );
 }
@@ -32,13 +32,13 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900">Equipment Control Dashboard</h1>
-        <p className="text-sm text-slate-500">What we have, where it is, and what needs attention.</p>
+        <h1 className="text-xl font-semibold text-(--navy)">Equipment Control Dashboard</h1>
+        <p className="text-sm text-(--steel)">What we have, where it is, and what needs attention.</p>
       </div>
 
       {/* What do we have? */}
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Network Position</h2>
+        <h2 className="mb-3 text-sm font-semibold text-(--navy)">Network Position</h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <SummaryCard label="Available" value={totalAvailable} />
           <SummaryCard label="In Transit" value={totalInTransit} tone={totalInTransit > 0 ? "warning" : "default"} />
@@ -49,22 +49,22 @@ export default async function DashboardPage() {
 
       {/* What needs attention? */}
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">
-          Needs Attention {overdueCount > 0 && <span className="text-red-600">({overdueCount} overdue)</span>}
+        <h2 className="mb-3 text-sm font-semibold text-(--navy)">
+          Needs Attention {overdueCount > 0 && <span className="id-code text-(--brick)">({overdueCount} overdue)</span>}
         </h2>
 
         {shortages.data && shortages.data.length > 0 && (
-          <div className="mb-3 overflow-hidden rounded-lg border border-amber-200 bg-amber-50">
-            <div className="border-b border-amber-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-amber-800">
+          <div className="panel mb-3 overflow-hidden" style={{ borderColor: "#EAD3AC" }}>
+            <div className="border-b px-4 py-2 text-xs font-semibold uppercase tracking-wide text-(--amber)" style={{ borderColor: "#EAD3AC", background: "var(--amber-surface)" }}>
               Shortages ({shortages.data.length})
             </div>
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-amber-100">
+              <tbody className="divide-y" style={{ borderColor: "#EAD3AC" }}>
                 {shortages.data.map((s: any) => (
                   <tr key={`${s.station_id}-${s.equipment_type_id}`}>
-                    <td className="px-4 py-2 text-amber-900">{s.station_code}</td>
-                    <td className="px-4 py-2 text-amber-900">{s.source_code} — {s.equipment_name}</td>
-                    <td className="px-4 py-2 text-right text-amber-900">
+                    <td className="id-code px-4 py-2 text-(--navy)">{s.station_code}</td>
+                    <td className="px-4 py-2 text-(--foreground)"><span className="id-code">{s.source_code}</span> — {s.equipment_name}</td>
+                    <td className="id-code px-4 py-2 text-right text-(--steel)">
                       {s.available_quantity ?? 0} / threshold {s.reorder_threshold}
                     </td>
                   </tr>
@@ -75,17 +75,17 @@ export default async function DashboardPage() {
         )}
 
         {exceptions.data && exceptions.data.length > 0 && (
-          <div className="mb-3 overflow-hidden rounded-lg border border-red-200 bg-red-50">
-            <div className="border-b border-red-200 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-red-800">
+          <div className="panel mb-3 overflow-hidden" style={{ borderColor: "#E2BEBE" }}>
+            <div className="border-b px-4 py-2 text-xs font-semibold uppercase tracking-wide text-(--brick)" style={{ borderColor: "#E2BEBE", background: "var(--brick-surface)" }}>
               Unresolved Exceptions ({exceptions.data.length})
             </div>
             <table className="w-full text-sm">
-              <tbody className="divide-y divide-red-100">
+              <tbody className="divide-y" style={{ borderColor: "#E2BEBE" }}>
                 {exceptions.data.map((e: any) => (
                   <tr key={e.id}>
-                    <td className="px-4 py-2 text-red-900">{e.exception_type.replace(/_/g, " ")}</td>
-                    <td className="px-4 py-2 text-red-900">{e.reference}</td>
-                    <td className="px-4 py-2 text-right text-red-700">
+                    <td className="px-4 py-2 text-(--foreground)">{e.exception_type.replace(/_/g, " ")}</td>
+                    <td className="id-code px-4 py-2 text-(--foreground)">{e.reference}</td>
+                    <td className="id-code px-4 py-2 text-right text-(--brick)">
                       {new Date(e.updated_at).toLocaleDateString()}
                     </td>
                   </tr>
@@ -96,17 +96,17 @@ export default async function DashboardPage() {
         )}
 
         {(!shortages.data || shortages.data.length === 0) && (!exceptions.data || exceptions.data.length === 0) && (
-          <p className="text-sm text-slate-500">Nothing needs attention right now.</p>
+          <p className="text-sm text-(--steel)">Nothing needs attention right now.</p>
         )}
       </section>
 
       {/* Pending transfers */}
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Open Transfers</h2>
+        <h2 className="mb-3 text-sm font-semibold text-(--navy)">Open Transfers</h2>
         {pendingTransfers.data && pendingTransfers.data.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-slate-200">
+          <div className="panel overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+              <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
                 <tr>
                   <th className="px-4 py-2">Transfer</th>
                   <th className="px-4 py-2">Route</th>
@@ -114,18 +114,18 @@ export default async function DashboardPage() {
                   <th className="px-4 py-2">Age</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
                 {pendingTransfers.data.map((t: any) => (
-                  <tr key={t.id} className={t.is_overdue ? "bg-red-50" : ""}>
+                  <tr key={t.id} className={t.is_overdue ? "bg-(--brick-surface)" : ""}>
                     <td className="px-4 py-2">
-                      <Link href={`/transfers/${t.id}`} className="font-medium text-slate-900 hover:underline">
+                      <Link href={`/transfers/${t.id}`} className="id-code font-medium text-(--navy) hover:underline">
                         {t.transfer_number}
                       </Link>
                     </td>
-                    <td className="px-4 py-2 text-slate-600">{t.from_station_code} → {t.to_station_code}</td>
-                    <td className="px-4 py-2 text-slate-600">{t.status}</td>
-                    <td className="px-4 py-2 text-slate-500">
-                      {Math.round(t.hours_since_requested)}h {t.is_overdue && <span className="text-red-600">(overdue)</span>}
+                    <td className="id-code px-4 py-2 text-(--steel)">{t.from_station_code} → {t.to_station_code}</td>
+                    <td className="px-4 py-2 text-(--foreground)">{t.status}</td>
+                    <td className="id-code px-4 py-2 text-(--steel)">
+                      {Math.round(t.hours_since_requested)}h {t.is_overdue && <span className="text-(--brick)">(overdue)</span>}
                     </td>
                   </tr>
                 ))}
@@ -133,27 +133,27 @@ export default async function DashboardPage() {
             </table>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">No open transfers.</p>
+          <p className="text-sm text-(--steel)">No open transfers.</p>
         )}
       </section>
 
       {/* Recent activity */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Recent Activity</h2>
+        <h2 className="mb-3 text-sm font-semibold text-(--navy)">Recent Activity</h2>
         {recentActivity.data && recentActivity.data.length > 0 ? (
-          <div className="space-y-1 text-sm text-slate-600">
+          <div className="panel divide-y text-sm" style={{ borderColor: "var(--border)" }}>
             {recentActivity.data.map((a: any, i: number) => (
-              <div key={i} className="flex justify-between border-b border-slate-100 py-1.5">
+              <div key={i} className="flex justify-between px-4 py-2 text-(--foreground)">
                 <span>
-                  <span className="font-medium text-slate-800">{a.actor_label ?? "System"}</span>{" "}
+                  <span className="font-medium text-(--navy)">{a.actor_label ?? "System"}</span>{" "}
                   {a.action.replace(/[._]/g, " ")}
                 </span>
-                <span className="text-slate-400">{new Date(a.created_at).toLocaleString()}</span>
+                <span className="id-code text-(--steel)">{new Date(a.created_at).toLocaleString()}</span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-500">No recent activity.</p>
+          <p className="text-sm text-(--steel)">No recent activity.</p>
         )}
       </section>
     </div>
