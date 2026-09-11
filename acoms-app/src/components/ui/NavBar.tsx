@@ -4,6 +4,7 @@ const LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/transfers", label: "Transfers" },
   { href: "/damage-loss", label: "Damage & Loss" },
+  { href: "/reports", label: "Reports" },
 ];
 
 export function NavBar() {
