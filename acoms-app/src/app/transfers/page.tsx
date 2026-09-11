@@ -18,35 +18,32 @@ export default async function TransfersPage() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Equipment Transfers</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-semibold text-(--navy)">Equipment Transfers</h1>
+          <p className="text-sm text-(--steel)">
             What&apos;s in transit, what needs action, what&apos;s recently moved.
           </p>
         </div>
-        <Link
-          href="/transfers/new"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
+        <Link href="/transfers/new" className="btn-primary px-4 py-2 text-sm">
           New Transfer
         </Link>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="panel px-4 py-3 text-sm text-(--brick)" style={{ borderColor: "#E2BEBE" }}>
           {error.message}
         </div>
       )}
 
       {!error && (!transfers || transfers.length === 0) && (
-        <div className="rounded-md border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500">
+        <div className="panel border-dashed px-6 py-12 text-center text-sm text-(--steel)">
           No transfers yet. Create the first one to get started.
         </div>
       )}
 
       {transfers && transfers.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-slate-200">
+        <div className="panel overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
               <tr>
                 <th className="px-4 py-3">Transfer #</th>
                 <th className="px-4 py-3">Route</th>
@@ -55,22 +52,22 @@ export default async function TransfersPage() {
                 <th className="px-4 py-3">Requested</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
               {(transfers as unknown as EquipmentTransfer[]).map((t) => (
-                <tr key={t.id} className="hover:bg-slate-50">
+                <tr key={t.id} className="hover:bg-(--steel-light)">
                   <td className="px-4 py-3">
-                    <Link href={`/transfers/${t.id}`} className="font-medium text-slate-900 hover:underline">
+                    <Link href={`/transfers/${t.id}`} className="id-code font-medium text-(--navy) hover:underline">
                       {t.transfer_number}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {t.from_station?.code} &rarr; {t.to_station?.code}
+                  <td className="id-code px-4 py-3 text-(--steel)">
+                    {t.from_station?.code} → {t.to_station?.code}
                   </td>
                   <td className="px-4 py-3">
                     <TransferStatusBadge status={t.status} />
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{t.priority}</td>
-                  <td className="px-4 py-3 text-slate-500">
+                  <td className="px-4 py-3 text-(--foreground)">{t.priority}</td>
+                  <td className="id-code px-4 py-3 text-(--steel)">
                     {new Date(t.requested_at).toLocaleDateString()}
                   </td>
                 </tr>
