@@ -1,26 +1,94 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F4F6F8;
+  --foreground: #16202B;
+
+  --navy: #14243B;
+  --navy-light: #1E3A5A;
+  --steel: #3D5A73;
+  --steel-light: #E4E9ED;
+  --amber: #C4720C;
+  --amber-surface: #FBF0E0;
+  --brick: #9C2B2B;
+  --brick-surface: #F7E7E7;
+  --teal: #1F6F5C;
+  --teal-surface: #E6F0EC;
+  --card: #FFFFFF;
+  --border: #D7DEE3;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-navy: var(--navy);
+  --color-steel: var(--steel);
+  --color-amber: var(--amber);
+  --color-brick: var(--brick);
+  --color-teal: var(--teal);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Identifiers — transfer numbers, equipment codes, quantities — always
+   render in mono. This is functional (scan-accuracy for codes like RZ001
+   vs RZO01), not decorative, matching how manifests/boarding passes use
+   fixed-width type for codes. */
+.id-code {
+  font-family: var(--font-mono);
+  letter-spacing: 0.01em;
+}
+
+/* Flat, bordered surfaces — deliberately not soft-shadow rounded cards. */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background: var(--navy);
+  color: white;
+  border-radius: 3px;
+  font-weight: 500;
+}
+.btn-primary:hover {
+  background: var(--navy-light);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--navy);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-weight: 500;
+}
+.btn-secondary:hover {
+  background: var(--steel-light);
+}
+
+/* Status tags — rectangular, like cargo/baggage tags, not soft pills.
+   Text always accompanies color (accessibility — never color alone). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 2px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.tag-neutral { background: var(--steel-light); color: var(--steel); }
+.tag-amber { background: var(--amber-surface); color: var(--amber); border-color: #EAD3AC; }
+.tag-brick { background: var(--brick-surface); color: var(--brick); border-color: #E2BEBE; }
+.tag-teal { background: var(--teal-surface); color: var(--teal); border-color: #BEDBD1; }
+.tag-navy { background: var(--steel-light); color: var(--navy); }
+
