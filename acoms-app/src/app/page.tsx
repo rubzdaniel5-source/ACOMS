@@ -1,69 +1,200 @@
-import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 
-export default function Home() {
+export default async function ReportsPage() {
+  const supabase = await createClient();
+
+  const [inventory, transfers, damage, loss] = await Promise.all([
+    supabase
+      .from("v_station_inventory_status")
+      .select("station_code, station_name, source_code, equipment_name, available_quantity, in_transit_quantity, damaged_quantity, missing_quantity, reorder_threshold, stock_status")
+      .order("station_code"),
+    supabase
+      .from("equipment_transfers")
+      .select("transfer_number, status, priority, requested_at, closed_at, from_station:from_station_id(code), to_station:to_station_id(code)")
+      .order("requested_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("damage_reports")
+      .select("status, quantity, reason, reported_at, resolved_at, station:station_id(code), equipment_type:equipment_type_id(source_code, name)")
+      .order("reported_at", { ascending: false })
+      .limit(200),
+    supabase
+      .from("loss_reports")
+      .select("status, quantity, circumstances, reported_at, resolved_at, station:station_id(code), equipment_type:equipment_type_id(source_code, name)")
+      .order("reported_at", { ascending: false })
+      .limit(200),
+  ]);
+
+  // Flatten joined fields for CSV export (nested objects don't export cleanly)
+  const transferRows = (transfers.data ?? []).map((t: any) => ({
+    transfer_number: t.transfer_number,
+    from_station: t.from_station?.code,
+    to_station: t.to_station?.code,
+    status: t.status,
+    priority: t.priority,
+    requested_at: t.requested_at,
+    closed_at: t.closed_at ?? "",
+  }));
+
+  const damageRows = (damage.data ?? []).map((d: any) => ({
+    equipment_code: d.equipment_type?.source_code,
+    equipment_name: d.equipment_type?.name,
+    station: d.station?.code,
+    quantity: d.quantity,
+    status: d.status,
+    reason: d.reason,
+    reported_at: d.reported_at,
+    resolved_at: d.resolved_at ?? "",
+  }));
+
+  const lossRows = (loss.data ?? []).map((l: any) => ({
+    equipment_code: l.equipment_type?.source_code,
+    equipment_name: l.equipment_type?.name,
+    station: l.station?.code,
+    quantity: l.quantity,
+    status: l.status,
+    circumstances: l.circumstances,
+    reported_at: l.reported_at,
+    resolved_at: l.resolved_at ?? "",
+  }));
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <h1 className="mb-1 text-xl font-semibold text-(--navy)">Reports</h1>
+      <p className="mb-6 text-sm text-(--steel)">Exportable views of current position and history.</p>
+
+      {/* Inventory by station */}
+      <section className="mb-10">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-(--navy)">Inventory by Station</h2>
+          <ExportCsvButton rows={inventory.data ?? []} filename="inventory-by-station.csv" />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="panel overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+              <tr>
+                <th className="px-3 py-2">Station</th>
+                <th className="px-3 py-2">Equipment</th>
+                <th className="px-3 py-2 text-right">Available</th>
+                <th className="px-3 py-2 text-right">In Transit</th>
+                <th className="px-3 py-2 text-right">Damaged</th>
+                <th className="px-3 py-2 text-right">Missing</th>
+                <th className="px-3 py-2">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+              {(inventory.data ?? []).map((r: any, i: number) => (
+                <tr key={i}>
+                  <td className="id-code px-3 py-1.5 text-(--navy)">{r.station_code}</td>
+                  <td className="px-3 py-1.5"><span className="id-code">{r.source_code}</span> {r.equipment_name}</td>
+                  <td className="id-code px-3 py-1.5 text-right">{r.available_quantity ?? "—"}</td>
+                  <td className="id-code px-3 py-1.5 text-right">{r.in_transit_quantity ?? "—"}</td>
+                  <td className="id-code px-3 py-1.5 text-right">{r.damaged_quantity ?? "—"}</td>
+                  <td className="id-code px-3 py-1.5 text-right">{r.missing_quantity ?? "—"}</td>
+                  <td className="px-3 py-1.5 text-xs">{r.stock_status.replace(/_/g, " ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </main>
+      </section>
+
+      {/* Transfer history */}
+      <section className="mb-10">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-(--navy)">Transfer History</h2>
+          <ExportCsvButton rows={transferRows} filename="transfer-history.csv" />
+        </div>
+        <div className="panel overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+              <tr>
+                <th className="px-3 py-2">Transfer #</th>
+                <th className="px-3 py-2">Route</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Requested</th>
+                <th className="px-3 py-2">Closed</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+              {transferRows.map((t, i) => (
+                <tr key={i}>
+                  <td className="id-code px-3 py-1.5 text-(--navy)">{t.transfer_number}</td>
+                  <td className="id-code px-3 py-1.5 text-(--steel)">{t.from_station} → {t.to_station}</td>
+                  <td className="px-3 py-1.5">{t.status}</td>
+                  <td className="id-code px-3 py-1.5 text-(--steel)">{new Date(t.requested_at).toLocaleDateString()}</td>
+                  <td className="id-code px-3 py-1.5 text-(--steel)">{t.closed_at ? new Date(t.closed_at).toLocaleDateString() : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Damage report */}
+      <section className="mb-10">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-(--navy)">Damage Reports</h2>
+          <ExportCsvButton rows={damageRows} filename="damage-reports.csv" />
+        </div>
+        <div className="panel overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+              <tr>
+                <th className="px-3 py-2">Equipment</th>
+                <th className="px-3 py-2">Station</th>
+                <th className="px-3 py-2 text-right">Qty</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Reported</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+              {damageRows.map((d, i) => (
+                <tr key={i}>
+                  <td className="px-3 py-1.5"><span className="id-code">{d.equipment_code}</span> {d.equipment_name}</td>
+                  <td className="id-code px-3 py-1.5">{d.station}</td>
+                  <td className="id-code px-3 py-1.5 text-right">{d.quantity}</td>
+                  <td className="px-3 py-1.5">{d.status.replace(/_/g, " ")}</td>
+                  <td className="id-code px-3 py-1.5 text-(--steel)">{new Date(d.reported_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Loss report */}
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-(--navy)">Loss Reports</h2>
+          <ExportCsvButton rows={lossRows} filename="loss-reports.csv" />
+        </div>
+        <div className="panel overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+              <tr>
+                <th className="px-3 py-2">Equipment</th>
+                <th className="px-3 py-2">Station</th>
+                <th className="px-3 py-2 text-right">Qty</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Reported</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+              {lossRows.map((l, i) => (
+                <tr key={i}>
+                  <td className="px-3 py-1.5"><span className="id-code">{l.equipment_code}</span> {l.equipment_name}</td>
+                  <td className="id-code px-3 py-1.5">{l.station}</td>
+                  <td className="id-code px-3 py-1.5 text-right">{l.quantity}</td>
+                  <td className="px-3 py-1.5">{l.status.replace(/_/g, " ")}</td>
+                  <td className="id-code px-3 py-1.5 text-(--steel)">{new Date(l.reported_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }
