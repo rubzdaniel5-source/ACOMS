@@ -27,10 +27,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     data: { user },
   } = await supabase.auth.getUser();
 
+  let userName: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+    userName = profile?.full_name ?? null;
+  }
+
   return (
     <html lang="en" className={`h-full antialiased ${plexSans.variable} ${plexMono.variable}`}>
       <body className="min-h-full flex flex-col font-sans bg-(--background) text-(--foreground)">
-        {user && <NavBar />}
+        {user && <NavBar userName={userName} />}
         {children}
       </body>
     </html>
