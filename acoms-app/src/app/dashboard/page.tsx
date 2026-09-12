@@ -5,13 +5,17 @@ import { ControlCard } from "@/components/ui/ControlCard";
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [overview, health, movement, lossDamage, reconciliation, exceptions] = await Promise.all([
+  const [overview, health, movement, lossDamage, reconciliation, exceptions, criticalStock] = await Promise.all([
     supabase.from("v_equipment_overview").select("*").single(),
     supabase.from("v_inventory_health").select("status"),
     supabase.from("v_movement_funnel").select("*").single(),
     supabase.from("v_loss_damage_summary").select("*").single(),
     supabase.from("v_reconciliation_summary").select("*").single(),
     supabase.from("v_unresolved_exceptions").select("*").order("updated_at", { ascending: false }).limit(10),
+    supabase
+      .from("v_inventory_health")
+      .select("station_id, station_code, source_code, equipment_name, current_stock, minimum_level, status")
+      .in("status", ["CRITICAL_SHORTAGE", "CRITICAL_SURPLUS"]),
   ]);
 
   const healthCounts = (health.data ?? []).reduce<Record<string, number>>((acc, r: any) => {
@@ -102,14 +106,34 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Action Required — persistent, immediately beneath the six cards */}
+      {/* Action Required — persistent, immediately beneath the six cards.
+          Combines transfer/damage/loss exceptions AND critical stock levels —
+          the Inventory Health card's numbers must never disagree with what
+          shows up here as something to act on. */}
       <section className="mt-8">
         <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-(--brick)">
           ⚠ Action Required
         </h2>
-        {exceptions.data && exceptions.data.length > 0 ? (
+        {(exceptions.data && exceptions.data.length > 0) || (criticalStock.data && criticalStock.data.length > 0) ? (
           <div className="panel divide-y" style={{ borderColor: "var(--border)" }}>
-            {exceptions.data.map((e: any) => {
+            {(criticalStock.data ?? []).map((s: any) => (
+              <div key={`stock-${s.station_id}-${s.source_code}`} className="flex items-center justify-between px-4 py-3 text-sm">
+                <span>
+                  <span className="text-(--brick)">🔴</span>{" "}
+                  <span className="font-medium text-(--foreground)">
+                    {s.status === "CRITICAL_SHORTAGE" ? "Critical Shortage" : "Critical Surplus"}
+                  </span>
+                  {" — "}
+                  <span className="id-code text-(--steel)">{s.station_code}</span>{" "}
+                  has {s.current_stock} of <span className="id-code">{s.source_code}</span> {s.equipment_name}
+                  {s.minimum_level != null && ` (min ${s.minimum_level})`}
+                </span>
+                <Link href="/transfers/new" className="text-sm font-semibold text-(--navy) hover:underline">
+                  {s.status === "CRITICAL_SHORTAGE" ? "Request Transfer →" : "Redistribute →"}
+                </Link>
+              </div>
+            ))}
+            {exceptions.data?.map((e: any) => {
               const href =
                 e.exception_type === "TRANSFER_DISCREPANCY" ? `/transfers/${e.id}` : `/damage-loss/${e.id}?type=${e.exception_type === "LOSS_PENDING" ? "loss" : "damage"}`;
               return (
