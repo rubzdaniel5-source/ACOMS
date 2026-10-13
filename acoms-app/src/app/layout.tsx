@@ -1,48 +1,21 @@
-import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
-import "./globals.css";
-import { createClient } from "@/lib/supabase/server";
-import { NavBar } from "@/components/ui/NavBar";
+import { redirect } from "next/navigation";
+import { getCurrentUserPermissions } from "@/features/auth/permissions";
+import { canEnterAdmin, visibleSections } from "@/features/admin/access";
+import { AdminSubNav } from "./AdminSubNav";
 
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const perms = await getCurrentUserPermissions();
+  if (!canEnterAdmin(perms)) redirect("/dashboard");
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-
-export const metadata: Metadata = {
-  title: "ACOMS",
-  description: "Airline Catering Operations Management System",
-};
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let userName: string | null = null;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
-    userName = profile?.full_name ?? null;
-  }
+  const sections = visibleSections(perms).map((s) => ({ href: s.href, label: s.label }));
 
   return (
-    <html lang="en" className={`h-full antialiased ${plexSans.variable} ${plexMono.variable}`}>
-      <body className="min-h-full flex flex-col font-sans bg-(--background) text-(--foreground)">
-        {user && <NavBar userName={userName} />}
-        {children}
-      </body>
-    </html>
+    <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 py-8">
+      <aside className="w-48 shrink-0">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-(--steel)">Administration</h2>
+        <AdminSubNav sections={sections} />
+      </aside>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
   );
 }
