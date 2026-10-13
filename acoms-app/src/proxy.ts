@@ -32,7 +32,21 @@ export async function proxy(request: NextRequest) {
   );
 
   // Refresh session if expired
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Users given a temporary password must set their own before doing anything
+  // else. The flag lives in app_metadata, which only the service role can write.
+  const path = request.nextUrl.pathname;
+  if (user?.app_metadata?.must_change_password === true && path !== "/change-password" && path !== "/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/change-password";
+    url.search = "";
+    const redirectResponse = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => redirectResponse.cookies.set(c));
+    return redirectResponse;
+  }
 
   return response;
 }
