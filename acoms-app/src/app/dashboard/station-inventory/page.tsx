@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetchAll";
 import { getCurrentUserPermissions } from "@/features/auth/permissions";
 import { StationInventoryTable, type InventoryRow } from "./StationInventoryTable";
 
@@ -13,10 +14,13 @@ export default async function StationInventoryPage({
   const sp = await searchParams;
   const supabase = await createClient();
   const [{ data, error }, perms] = await Promise.all([
-    supabase
-      .from("v_inventory_health")
-      .select("station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status")
-      .order("station_code"),
+    fetchAll<any>((from, to) =>
+      supabase
+        .from("v_inventory_health")
+        .select("station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status")
+        .order("station_code").order("source_code")
+        .range(from, to)
+    ),
     getCurrentUserPermissions(),
   ]);
 

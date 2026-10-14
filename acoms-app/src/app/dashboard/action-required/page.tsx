@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetchAll";
 import { getCurrentUserPermissions, getCurrentUserId } from "@/features/auth/permissions";
 import { buildAlerts, fetchAlertSources } from "@/features/dashboard/alerts";
 import { AlertList } from "@/components/ui/AlertList";
@@ -7,10 +8,14 @@ import { AlertList } from "@/components/ui/AlertList";
 export default async function ActionRequiredPage() {
   const supabase = await createClient();
   const [inv, perms, userId] = await Promise.all([
-    supabase
-      .from("v_inventory_health")
-      .select("station_id, station_code, source_code, equipment_name, current_stock, minimum_level, status")
-      .in("status", ["CRITICAL_SHORTAGE", "CRITICAL_SURPLUS"]),
+    fetchAll<any>((from, to) =>
+      supabase
+        .from("v_inventory_health")
+        .select("station_id, station_code, source_code, equipment_name, current_stock, minimum_level, status")
+        .in("status", ["CRITICAL_SHORTAGE", "CRITICAL_SURPLUS"])
+        .order("station_code").order("source_code")
+        .range(from, to)
+    ),
     getCurrentUserPermissions(),
     getCurrentUserId(),
   ]);

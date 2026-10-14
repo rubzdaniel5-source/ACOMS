@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetchAll";
 import { ControlCard } from "@/components/ui/ControlCard";
 import { getCurrentUserPermissions, getCurrentUserId } from "@/features/auth/permissions";
 import { buildAlerts, fetchAlertSources } from "@/features/dashboard/alerts";
@@ -11,9 +12,13 @@ export default async function DashboardPage() {
 
   const [overview, inventory, movement, lossDamage, reconciliation, perms] = await Promise.all([
     supabase.from("v_equipment_overview").select("*").single(),
-    supabase
-      .from("v_inventory_health")
-      .select("station_id, station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status"),
+    fetchAll<any>((from, to) =>
+      supabase
+        .from("v_inventory_health")
+        .select("station_id, station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status")
+        .order("station_code").order("source_code")
+        .range(from, to)
+    ),
     supabase.from("v_movement_funnel").select("*").single(),
     supabase.from("v_loss_damage_summary").select("*").single(),
     supabase.from("v_reconciliation_summary").select("*").single(),

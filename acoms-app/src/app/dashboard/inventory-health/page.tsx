@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetchAll";
 
 const STATUS_TAG: Record<string, string> = {
   CRITICAL_SHORTAGE: "tag-brick",
@@ -13,11 +14,14 @@ const STATUS_TAG: Record<string, string> = {
 
 export default async function InventoryHealthPage() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("v_inventory_health")
-    .select("*")
-    .in("status", ["CRITICAL_SHORTAGE", "SHORTAGE", "SURPLUS", "CRITICAL_SURPLUS"])
-    .order("status");
+  const { data } = await fetchAll<any>((from, to) =>
+    supabase
+      .from("v_inventory_health")
+      .select("*")
+      .in("status", ["CRITICAL_SHORTAGE", "SHORTAGE", "SURPLUS", "CRITICAL_SURPLUS"])
+      .order("status").order("station_code").order("source_code")
+      .range(from, to)
+  );
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">

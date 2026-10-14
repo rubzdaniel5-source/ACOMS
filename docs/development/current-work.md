@@ -43,3 +43,5 @@ Stage 4 done: screenshot review fixes (dark-mode row dividers were near-white be
 Stage 5 done: themed ConfirmDialog (reject with required reason, dispatch, reconcile, close), Reports page layout pass, account-synced theme (migration 024), larger table headings, section headings and primary tabs. Remaining: admin deactivate/remove prompts still use browser dialogs; full multi-width visual review.
 
 Stage 6 done: Action Required now includes overdue transfers and adjustments awaiting approval, shows station, quantities and next action, is de-duplicated and sorted (ADR-013), has a full list page, and refuses to show a calm empty state when a source query failed.
+
+Stage 7 done: migration 025 adds `transfers.reconciliation_overdue_days` (default 3) and flags received-but-unreconciled and reconciled-but-unclosed transfers as overdue (Action Required shows "Reconciliation overdue"). Inventory, health and report reads now page through all rows (`lib/supabase/fetchAll.ts`) so the 1,000-row API limit can never truncate counts or exports. Tested: 25 migrations apply cleanly on a fresh database; overdue flags verified for each status at boundary ages.

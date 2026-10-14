@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { fetchAll } from "@/lib/supabase/fetchAll";
 import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { TransferStatusBadge } from "@/components/ui/TransferStatusBadge";
 import type { TransferStatus } from "@/types/transfers";
@@ -49,10 +50,13 @@ export default async function ReportsPage() {
   const supabase = await createClient();
 
   const [inventory, transfers, damage, loss] = await Promise.all([
-    supabase
-      .from("v_station_inventory_status")
-      .select("station_code, station_name, source_code, equipment_name, available_quantity, in_transit_quantity, damaged_quantity, missing_quantity, reorder_threshold, stock_status")
-      .order("station_code"),
+    fetchAll<any>((from, to) =>
+      supabase
+        .from("v_station_inventory_status")
+        .select("station_code, station_name, source_code, equipment_name, available_quantity, in_transit_quantity, damaged_quantity, missing_quantity, reorder_threshold, stock_status")
+        .order("station_code").order("source_code")
+        .range(from, to)
+    ),
     supabase
       .from("equipment_transfers")
       .select("transfer_number, status, priority, requested_at, closed_at, from_station:from_station_id(code), to_station:to_station_id(code)")

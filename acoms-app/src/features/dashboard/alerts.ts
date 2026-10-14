@@ -43,7 +43,7 @@ const n = (v: number) => v.toLocaleString("en-GB");
 export async function fetchAlertSources(supabase: SupabaseClient, perms: Set<string>) {
   const canApprove = perms.has("approve_adjustment");
   const [overdue, adjustments, stations, exceptions] = await Promise.all([
-    supabase.from("v_pending_transfers").select("id, transfer_number, status, from_station_code, to_station_code, hours_since_requested").eq("is_overdue", true),
+    supabase.from("v_pending_transfers").select("id, transfer_number, status, from_station_code, to_station_code, hours_since_requested, overdue_kind, hours_in_status").eq("is_overdue", true),
     canApprove
       ? supabase.from("v_stock_adjustments").select("id, adjustment_number, station_code, source_code, direction, quantity, requested_at, requested_by").eq("status", "REQUESTED")
       : Promise.resolve({ data: [], error: null }),
@@ -102,13 +102,21 @@ export function buildAlerts(opts: {
   }
 
   for (const t of (sources.overdue.data ?? []) as any[]) {
-    const waiting = t.status === "REQUESTED";
+    const kind: string = t.overdue_kind ?? "OPEN";
+    const hrs: number = t.hours_in_status ?? t.hours_since_requested;
+    const what =
+      kind === "APPROVAL" ? `Waiting for approval for ${days(hrs)}.`
+      : kind === "RECONCILE" ? `Received but not reconciled for ${days(hrs)}.`
+      : kind === "CLOSE" ? `Reconciled but not closed for ${days(hrs)}.`
+      : `Open for ${days(t.hours_since_requested)}.`;
     out.push({
-      key: `overdue-${t.id}`, severity: "warning", label: "Overdue transfer", station: t.from_station_code,
+      key: `overdue-${t.id}`, severity: "warning",
+      label: kind === "RECONCILE" || kind === "CLOSE" ? "Reconciliation overdue" : "Overdue transfer",
+      station: kind === "OPEN" || kind === "APPROVAL" ? t.from_station_code : t.to_station_code,
       reference: t.transfer_number,
-      detail: `${t.from_station_code} to ${t.to_station_code}. ${waiting ? "Waiting for approval" : "Open"} for ${days(t.hours_since_requested)}.`,
+      detail: `${t.from_station_code} to ${t.to_station_code}. ${what}`,
       href: `/transfers/${t.id}`, actions: [{ label: "Open transfer", href: `/transfers/${t.id}` }],
-      kindOrder: 1.5, urgency: t.hours_since_requested,
+      kindOrder: kind === "RECONCILE" || kind === "CLOSE" ? 1.6 : 1.5, urgency: hrs,
     });
   }
 
