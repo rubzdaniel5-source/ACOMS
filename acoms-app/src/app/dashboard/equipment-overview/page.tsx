@@ -31,7 +31,7 @@ export default async function EquipmentOverviewPage({ searchParams }: { searchPa
 
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+          <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
             <tr>
               <th className="px-3 py-2">Equipment</th>
               <th className="px-3 py-2">Category</th>
@@ -41,7 +41,7 @@ export default async function EquipmentOverviewPage({ searchParams }: { searchPa
               <th className="px-3 py-2 text-right">Missing</th>
             </tr>
           </thead>
-          <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+          <tbody className="divide-y">
             {(data ?? []).map((r: any, i: number) => (
               <tr key={i}>
                 <td className="px-3 py-2"><span className="id-code">{r.source_code}</span> {r.name}</td>

@@ -33,8 +33,8 @@ export default async function DamageLossPage({ searchParams }: { searchParams: P
   const [damageReports, lossReports] = await Promise.all([damageQ, lossQ]);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-1 text-xl font-semibold text-(--color-text)">Damage &amp; Loss</h1>
+    <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6">
+      <h1 className="mb-1 text-2xl font-semibold text-(--color-text)">Damage &amp; Loss</h1>
       <p className="mb-6 text-sm text-(--color-text-subtle)">
         Standalone reports — equipment damaged or lost outside a transfer.
       </p>
@@ -51,9 +51,9 @@ export default async function DamageLossPage({ searchParams }: { searchParams: P
       {showDamage && (<section className="mt-10">
         <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Damage Reports</h2>
         {damageReports.data && damageReports.data.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-(--color-border)">
-            <table className="w-full text-sm">
-              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium uppercase tracking-wide text-(--color-text-subtle)">
+          <div className="panel overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium text-(--color-text-subtle)">
                 <tr>
                   <th className="px-4 py-2">Equipment</th>
                   <th className="px-4 py-2">Station</th>
@@ -88,9 +88,9 @@ export default async function DamageLossPage({ searchParams }: { searchParams: P
       {showLoss && (<section className="mt-8">
         <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Loss Reports</h2>
         {lossReports.data && lossReports.data.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-(--color-border)">
-            <table className="w-full text-sm">
-              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium uppercase tracking-wide text-(--color-text-subtle)">
+          <div className="panel overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium text-(--color-text-subtle)">
                 <tr>
                   <th className="px-4 py-2">Equipment</th>
                   <th className="px-4 py-2">Station</th>

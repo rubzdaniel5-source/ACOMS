@@ -50,31 +50,36 @@ export function ReportForm() {
   }
 
   return (
-    <div className="rounded-lg border border-(--color-border) p-5">
+    <div className="panel p-4 sm:p-5">
       <div className="mb-4 flex gap-2">
         <button
+          type="button"
+          aria-pressed={mode === "damage"}
           onClick={() => setMode("damage")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === "damage" ? "bg-(--color-action) text-(--color-on-action)" : "bg-(--color-surface-subtle) text-(--color-text-muted)"}`}
+          className={`min-h-11 rounded-md px-4 py-1.5 text-sm font-medium ${mode === "damage" ? "bg-(--color-action) text-(--color-on-action)" : "bg-(--color-surface-subtle) text-(--color-text-muted)"}`}
         >
           Report Damage
         </button>
         <button
+          type="button"
+          aria-pressed={mode === "loss"}
           onClick={() => setMode("loss")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === "loss" ? "bg-(--color-action) text-(--color-on-action)" : "bg-(--color-surface-subtle) text-(--color-text-muted)"}`}
+          className={`min-h-11 rounded-md px-4 py-1.5 text-sm font-medium ${mode === "loss" ? "bg-(--color-action) text-(--color-on-action)" : "bg-(--color-surface-subtle) text-(--color-text-muted)"}`}
         >
           Report Loss
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Station</label>
+            <label htmlFor="report-station" className="mb-1 block text-sm font-medium text-(--color-text-muted)">Station</label>
             <select
+              id="report-station"
               required
               value={stationId}
               onChange={(e) => setStationId(e.target.value)}
-              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
+              className="min-h-11 w-full px-3 py-2 text-sm"
             >
               <option value="">Select...</option>
               {stations.map((s) => (
@@ -83,25 +88,27 @@ export function ReportForm() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Quantity</label>
+            <label htmlFor="report-qty" className="mb-1 block text-sm font-medium text-(--color-text-muted)">Quantity</label>
             <input
+              id="report-qty"
               type="number"
               min={1}
               required
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 0)}
-              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
+              className="min-h-11 w-full px-3 py-2 text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Equipment</label>
+          <label htmlFor="report-equipment" className="mb-1 block text-sm font-medium text-(--color-text-muted)">Equipment</label>
           <select
+            id="report-equipment"
             required
             value={equipmentTypeId}
             onChange={(e) => setEquipmentTypeId(e.target.value)}
-            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
+            className="min-h-11 w-full px-3 py-2 text-sm"
           >
             <option value="">Select...</option>
             {equipmentTypes.map((et) => (
@@ -111,25 +118,26 @@ export function ReportForm() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">
+          <label htmlFor="report-detail" className="mb-1 block text-sm font-medium text-(--color-text-muted)">
             {mode === "damage" ? "Reason" : "Circumstances"}
           </label>
           <textarea
+            id="report-detail"
             required
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
+            className="min-h-11 w-full px-3 py-2 text-sm"
             placeholder={mode === "damage" ? "e.g. Cracked during handling at receiving" : "e.g. Not found during morning count, last seen..."}
           />
         </div>
 
-        {error && <p className="rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</p>}
+        {error && <p role="alert" className="alert alert-danger">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+          className="btn-primary min-h-11 px-5 text-sm"
         >
           {submitting ? "Submitting..." : `Submit ${mode === "damage" ? "Damage" : "Loss"} Report`}
         </button>

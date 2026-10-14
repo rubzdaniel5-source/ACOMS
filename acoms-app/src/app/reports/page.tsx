@@ -70,7 +70,7 @@ export default async function ReportsPage() {
         </div>
         <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr>
                 <th className="px-3 py-2">Station</th>
                 <th className="px-3 py-2">Equipment</th>
@@ -81,7 +81,7 @@ export default async function ReportsPage() {
                 <th className="px-3 py-2">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {(inventory.data ?? []).map((r: any, i: number) => (
                 <tr key={i}>
                   <td className="id-code px-3 py-1.5 text-(--navy)">{r.station_code}</td>
@@ -105,7 +105,7 @@ export default async function ReportsPage() {
         </div>
         <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr>
                 <th className="px-3 py-2">Transfer #</th>
                 <th className="px-3 py-2">Route</th>
@@ -114,7 +114,7 @@ export default async function ReportsPage() {
                 <th className="px-3 py-2">Closed</th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {transferRows.map((t, i) => (
                 <tr key={i}>
                   <td className="id-code px-3 py-1.5 text-(--navy)">{t.transfer_number}</td>
@@ -136,7 +136,7 @@ export default async function ReportsPage() {
         </div>
         <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr>
                 <th className="px-3 py-2">Equipment</th>
                 <th className="px-3 py-2">Station</th>
@@ -145,7 +145,7 @@ export default async function ReportsPage() {
                 <th className="px-3 py-2">Reported</th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {damageRows.map((d, i) => (
                 <tr key={i}>
                   <td className="px-3 py-1.5"><span className="id-code">{d.equipment_code}</span> {d.equipment_name}</td>
@@ -167,7 +167,7 @@ export default async function ReportsPage() {
         </div>
         <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr>
                 <th className="px-3 py-2">Equipment</th>
                 <th className="px-3 py-2">Station</th>
@@ -176,7 +176,7 @@ export default async function ReportsPage() {
                 <th className="px-3 py-2">Reported</th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {lossRows.map((l, i) => (
                 <tr key={i}>
                   <td className="px-3 py-1.5"><span className="id-code">{l.equipment_code}</span> {l.equipment_name}</td>

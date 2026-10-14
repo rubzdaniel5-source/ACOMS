@@ -66,7 +66,7 @@ export function ImportWizard() {
           </p>
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-(--color-surface) text-left text-xs uppercase text-(--steel)"><tr><th className="py-2">Row</th><th>Code</th><th>Action</th><th>Problem</th></tr></thead>
+              <thead className="sticky top-0 bg-(--color-surface) text-left text-xs text-(--steel)"><tr><th className="py-2">Row</th><th>Code</th><th>Action</th><th>Problem</th></tr></thead>
               <tbody>
                 {preview.map((p) => (
                   <tr key={p.row_number} className="border-t border-(--border)">

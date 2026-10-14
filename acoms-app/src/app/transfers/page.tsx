@@ -30,10 +30,10 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
   const { data: transfers, error } = await query;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-(--navy)">Equipment Transfers</h1>
+          <h1 className="text-2xl font-semibold text-(--navy)">Equipment Transfers</h1>
           <p className="text-sm text-(--steel)">
             What&apos;s in transit, what needs action, what&apos;s recently moved.
           </p>
@@ -64,8 +64,8 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
 
       {transfers && transfers.length > 0 && (
         <div className="panel overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr>
                 <th className="px-4 py-3">Transfer #</th>
                 <th className="px-4 py-3">Route</th>
@@ -74,7 +74,7 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
                 <th className="px-4 py-3">Requested</th>
               </tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {(transfers as unknown as EquipmentTransfer[]).map((t) => (
                 <tr key={t.id} className="hover:bg-(--steel-light)">
                   <td className="px-4 py-3">

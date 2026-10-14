@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { requestTransferAction } from "@/features/transfers/actions";
@@ -89,135 +90,133 @@ export default function NewTransferPage() {
   // ahead of real usage feedback).
   const fromStation = stations.find((s) => s.id === fromStationId);
 
+  const field = "min-h-11 w-full px-3 py-2 text-sm";
+  const lbl = "mb-1 block text-sm font-medium text-(--color-text-muted)";
+  const req = <span className="text-(--color-danger)" aria-hidden="true"> *</span>;
+
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-xl font-semibold text-(--color-text)">New Transfer Request</h1>
+    <div className="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6">
+      <Link href="/transfers" className="mb-4 inline-block text-sm text-(--color-primary) hover:underline">Back to transfers</Link>
+      <h1 className="mb-1 text-2xl font-semibold text-(--color-text)">New Transfer Request</h1>
+      <p className="mb-6 text-sm text-(--color-text-muted)">
+        A request does not move stock. It must be approved, dispatched and received before balances change.
+      </p>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">From Station</label>
-            <select
-              required
-              value={fromStationId}
-              onChange={(e) => setFromStationId(e.target.value)}
-              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
-            >
-              <option value="">Select...</option>
-              {stations.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.code} — {s.name}
-                </option>
-              ))}
-            </select>
-            {fromStation?.station_type === "NO_STOCK_TURNAROUND" && (
-              <p className="mt-1 text-xs text-(--color-warning)">
-                Warning: this is a no-stock turnaround station and likely holds no equipment to transfer out.
-              </p>
-            )}
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate={false}>
+        <section className="panel space-y-4 p-4 sm:p-5">
+          <h2 className="text-base font-semibold text-(--color-text)">Route</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="from-station" className={lbl}>From station{req}</label>
+              <select id="from-station" required value={fromStationId} onChange={(e) => setFromStationId(e.target.value)} className={field}>
+                <option value="">Select station</option>
+                {stations.map((s) => (
+                  <option key={s.id} value={s.id}>{s.code} — {s.name}</option>
+                ))}
+              </select>
+              {fromStation?.station_type === "NO_STOCK_TURNAROUND" && (
+                <p className="mt-1 text-xs text-(--color-warning)">
+                  This is a no-stock turnaround station and likely holds no equipment to transfer out.
+                </p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="to-station" className={lbl}>To station{req}</label>
+              <select id="to-station" required value={toStationId} onChange={(e) => setToStationId(e.target.value)} className={field}>
+                <option value="">Select station</option>
+                {stations.map((s) => (
+                  <option key={s.id} value={s.id}>{s.code} — {s.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">To Station</label>
-            <select
-              required
-              value={toStationId}
-              onChange={(e) => setToStationId(e.target.value)}
-              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
-            >
-              <option value="">Select...</option>
-              {stations.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.code} — {s.name}
-                </option>
-              ))}
-            </select>
+        </section>
+
+        <section className="panel space-y-4 p-4 sm:p-5">
+          <h2 className="text-base font-semibold text-(--color-text)">Details</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label htmlFor="priority" className={lbl}>Priority</label>
+              <select id="priority" value={priority} onChange={(e) => setPriority(e.target.value)} className={field}>
+                <option value="LOW">Low</option>
+                <option value="NORMAL">Normal</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="reason" className={lbl}>Reason</label>
+              <textarea
+                id="reason"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2 text-sm"
+                placeholder="e.g. ABJ running low on main course casseroles"
+              />
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Priority</label>
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
-          >
-            <option value="LOW">Low</option>
-            <option value="NORMAL">Normal</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Reason</label>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            rows={2}
-            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
-            placeholder="e.g. ABJ running low on main course casseroles"
-          />
-        </div>
-
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium text-(--color-text-muted)">Equipment</label>
-            <button
-              type="button"
-              onClick={addItem}
-              className="text-sm font-medium text-(--color-text-muted) hover:text-(--color-text)"
-            >
-              + Add line
-            </button>
+        <section className="panel p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-(--color-text)">Equipment{req}</h2>
+            <button type="button" onClick={addItem} className="btn-secondary min-h-11 px-4 text-sm">Add line</button>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {items.map((item, index) => (
-              <div key={index} className="flex gap-2">
-                <select
-                  required
-                  value={item.equipment_type_id}
-                  onChange={(e) => updateItem(index, { equipment_type_id: e.target.value })}
-                  className="flex-1 rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
-                >
-                  <option value="">Select equipment...</option>
-                  {equipmentTypes.map((et) => (
-                    <option key={et.id} value={et.id}>
-                      {et.source_code} — {et.name}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min={1}
-                  required
-                  value={item.quantity}
-                  onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value, 10) || 0 })}
-                  className="w-24 rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
-                />
-                {items.length > 1 && (
+              <div key={index} className="grid grid-cols-[1fr_6rem_auto] items-end gap-2 sm:gap-3">
+                <div>
+                  <label htmlFor={`eq-${index}`} className="mb-1 block text-xs text-(--color-text-subtle)">Item</label>
+                  <select
+                    id={`eq-${index}`}
+                    required
+                    value={item.equipment_type_id}
+                    onChange={(e) => updateItem(index, { equipment_type_id: e.target.value })}
+                    className={field}
+                  >
+                    <option value="">Select equipment</option>
+                    {equipmentTypes.map((et) => (
+                      <option key={et.id} value={et.id}>{et.source_code} — {et.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor={`qty-${index}`} className="mb-1 block text-xs text-(--color-text-subtle)">Quantity</label>
+                  <input
+                    id={`qty-${index}`}
+                    type="number"
+                    min={1}
+                    required
+                    value={item.quantity}
+                    onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value, 10) || 0 })}
+                    className={`${field} id-code`}
+                  />
+                </div>
+                {items.length > 1 ? (
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="px-2 text-(--color-text-subtle) hover:text-(--color-danger)"
+                    aria-label={`Remove line ${index + 1}`}
+                    className="btn-secondary min-h-11 min-w-11 px-3 text-sm"
                   >
-                    &times;
+                    Remove
                   </button>
+                ) : (
+                  <span aria-hidden="true" />
                 )}
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {error && <p className="rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</p>}
+        {error && <div role="alert" className="alert alert-danger">{error}</div>}
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
-          >
-            {submitting ? "Submitting..." : "Submit Request"}
+        <div className="flex flex-wrap gap-3">
+          <button type="submit" disabled={submitting} className="btn-primary min-h-11 px-5 text-sm">
+            {submitting ? "Submitting" : "Submit request"}
           </button>
+          <Link href="/transfers" className="btn-secondary inline-flex min-h-11 items-center px-5 text-sm">Cancel</Link>
         </div>
       </form>
     </div>

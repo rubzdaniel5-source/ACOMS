@@ -121,6 +121,12 @@
   --font-mono: var(--font-plex-mono);
 }
 
+/* Tailwind's default border colour is currentColor, which is near-white in dark
+   mode. Make every border use the theme border unless a component overrides it. */
+*, ::before, ::after, ::backdrop {
+  border-color: var(--color-border);
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-text);

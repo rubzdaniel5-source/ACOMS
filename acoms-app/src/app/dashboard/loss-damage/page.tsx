@@ -26,10 +26,10 @@ export default async function LossDamagePage() {
         <h2 className="mb-3 text-sm font-semibold text-(--brick)">Missing Equipment ({loss.data?.length ?? 0})</h2>
         <div className="panel overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr><th className="px-3 py-2">Equipment</th><th className="px-3 py-2">Station</th><th className="px-3 py-2 text-right">Qty</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Action</th></tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {(loss.data ?? []).map((l: any) => (
                 <tr key={l.id}>
                   <td className="px-3 py-2"><span className="id-code">{l.equipment_type?.source_code}</span> {l.equipment_type?.name}</td>
@@ -49,10 +49,10 @@ export default async function LossDamagePage() {
         <h2 className="mb-3 text-sm font-semibold text-(--amber)">Damaged Equipment ({damage.data?.length ?? 0})</h2>
         <div className="panel overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
               <tr><th className="px-3 py-2">Equipment</th><th className="px-3 py-2">Station</th><th className="px-3 py-2 text-right">Qty</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Action</th></tr>
             </thead>
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody className="divide-y">
               {(damage.data ?? []).map((d: any) => (
                 <tr key={d.id}>
                   <td className="px-3 py-2"><span className="id-code">{d.equipment_type?.source_code}</span> {d.equipment_type?.name}</td>

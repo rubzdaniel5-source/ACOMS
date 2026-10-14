@@ -25,7 +25,7 @@ export function EquipmentSidePanel({ id, isActive, onHand, aliases }: { id: stri
     <aside className="space-y-4">
       {error && <p className="rounded-sm px-3 py-2 text-sm text-(--brick)" style={{ background: "var(--brick-surface)" }}>{error}</p>}
       <section className="panel p-4">
-        <div className="text-xs uppercase text-(--steel)">Units on the books</div>
+        <div className="text-xs text-(--steel)">Units on the books</div>
         <div className="text-2xl font-semibold text-(--navy)">{onHand}</div>
       </section>
 

@@ -34,7 +34,7 @@ export function UsersTable({ users }: { users: U[] }) {
       </div>
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-(--steel)">
+          <thead className="text-left text-xs text-(--steel)">
             <tr><th className="p-3">Name</th><th className="p-3">Roles</th><th className="p-3">Last sign-in</th><th className="p-3">Status</th></tr>
           </thead>
           <tbody>

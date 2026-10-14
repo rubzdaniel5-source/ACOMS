@@ -30,8 +30,8 @@ export default async function TransferDetailPage({
 
   if (error || !transfer) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-8">
-        <p className="rounded-md bg-(--color-danger-soft) px-4 py-3 text-sm text-(--color-danger)">
+      <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6">
+        <p className="alert alert-danger">
           {error?.message ?? "Transfer not found."}
         </p>
       </div>
@@ -42,10 +42,10 @@ export default async function TransferDetailPage({
   const transferItems = (items ?? []) as unknown as EquipmentTransferItem[];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-(--color-text)">{t.transfer_number}</h1>
+          <h1 className="text-2xl font-semibold text-(--color-text)">{t.transfer_number}</h1>
           <p className="text-sm text-(--color-text-subtle)">
             {t.from_station?.code} ({t.from_station?.name}) &rarr; {t.to_station?.code} ({t.to_station?.name})
           </p>
@@ -54,15 +54,15 @@ export default async function TransferDetailPage({
       </div>
 
       {t.reason && (
-        <div className="mb-4 rounded-md bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
+        <div className="mb-4 rounded-lg bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
           <span className="font-medium">Reason: </span>
           {t.reason}
         </div>
       )}
 
-      <div className="mb-6 overflow-hidden rounded-lg border border-(--color-border)">
-        <table className="w-full text-sm">
-          <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium uppercase tracking-wide text-(--color-text-subtle)">
+      <div className="mb-6 panel overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium text-(--color-text-subtle)">
             <tr>
               <th className="px-4 py-2">Equipment</th>
               <th className="px-4 py-2">Requested</th>

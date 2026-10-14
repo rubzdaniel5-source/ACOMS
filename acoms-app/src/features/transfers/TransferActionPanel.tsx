@@ -57,11 +57,11 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
   }
 
   return (
-    <div className="rounded-lg border border-(--color-border) p-5">
+    <div className="panel p-4 sm:p-5">
       <h2 className="mb-3 text-sm font-semibold text-(--color-text)">Actions</h2>
 
       {error && (
-        <div className="mb-3 rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</div>
+        <div className="mb-3 alert alert-danger">{error}</div>
       )}
 
       {transfer.status === "REQUESTED" && (
@@ -87,7 +87,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                     )
                   )
                 }
-                className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+                className="btn-primary min-h-11 px-5 text-sm"
               >
                 Approve
               </button>
@@ -97,7 +97,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                   const reason = window.prompt("Reason for rejection:");
                   if (reason) run(() => rejectTransferAction(transfer.id, reason));
                 }}
-                className="rounded-md border border-(--color-border-strong) px-4 py-2 text-sm font-medium text-(--color-text-muted) hover:bg-(--color-surface-hover) disabled:opacity-50"
+                className="btn-secondary min-h-11 px-5 text-sm"
               >
                 Reject
               </button>
@@ -117,7 +117,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 min={0}
                 defaultValue={it.quantity_approved ?? it.quantity_requested}
                 onChange={(e) => setQuantities((q) => ({ ...q, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                className="w-24 rounded-md border border-(--color-border-strong) px-2 py-1"
+                className="id-code min-h-11 w-24 px-2 py-1"
               />
             </div>
           ))}
@@ -134,7 +134,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 )
               )
             }
-            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+            className="btn-primary min-h-11 px-5 text-sm"
           >
             Confirm Dispatch
           </button>
@@ -152,7 +152,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 min={0}
                 defaultValue={it.quantity_dispatched ?? 0}
                 onChange={(e) => setQuantities((q) => ({ ...q, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                className="w-24 rounded-md border border-(--color-border-strong) px-2 py-1"
+                className="id-code min-h-11 w-24 px-2 py-1"
               />
             </div>
           ))}
@@ -169,7 +169,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 )
               )
             }
-            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+            className="btn-primary min-h-11 px-5 text-sm"
           >
             Confirm Receipt
           </button>
@@ -192,7 +192,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                   min={0}
                   defaultValue={0}
                   onChange={(e) => setDamaged((d) => ({ ...d, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                  className="w-full rounded-md border border-(--color-border-strong) px-2 py-1"
+                  className="id-code min-h-11 w-full px-2 py-1"
                 />
               </div>
               <div>
@@ -202,7 +202,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                   min={0}
                   defaultValue={0}
                   onChange={(e) => setMissing((m) => ({ ...m, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                  className="w-full rounded-md border border-(--color-border-strong) px-2 py-1"
+                  className="id-code min-h-11 w-full px-2 py-1"
                 />
               </div>
             </div>
@@ -221,7 +221,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 )
               )
             }
-            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+            className="btn-primary min-h-11 px-5 text-sm"
           >
             Reconcile
           </button>
@@ -232,7 +232,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
         <button
           disabled={pending}
           onClick={() => run(() => closeTransferAction(transfer.id))}
-          className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+          className="btn-primary min-h-11 px-5 text-sm"
         >
           Close Transfer
         </button>
@@ -249,12 +249,12 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
             onChange={(e) => setReasonText(e.target.value)}
             rows={2}
             placeholder="Explain the investigation outcome..."
-            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
+            className="min-h-11 w-full px-3 py-2 text-sm"
           />
           <button
             disabled={pending || reasonText.trim().length === 0}
             onClick={() => run(() => resolveDiscrepancyAction(transfer.id, reasonText))}
-            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
+            className="btn-primary min-h-11 px-5 text-sm"
           >
             Resolve Discrepancy
           </button>

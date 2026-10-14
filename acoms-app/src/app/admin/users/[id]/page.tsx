@@ -30,7 +30,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         roles={roles.filter((r) => r.assignable).map((r) => ({ id: r.id, name: r.name }))}
         stations={(stations.data ?? []) as any}
       />
-      <h2 className="mb-2 mt-8 text-sm font-semibold uppercase tracking-wide text-(--steel)">Recent changes</h2>
+      <h2 className="mb-2 mt-8 text-sm font-semibold text-(--steel)">Recent changes</h2>
       <div className="panel">
         {(history.data ?? []).length === 0 && <p className="p-4 text-sm text-(--steel)">No recorded changes.</p>}
         {((history.data ?? []) as any[]).map((h) => (

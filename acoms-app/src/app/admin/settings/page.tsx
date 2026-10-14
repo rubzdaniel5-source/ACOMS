@@ -21,7 +21,7 @@ export default async function SettingsPage() {
       {settings.error && <p className="mb-4 text-sm text-(--brick)">{settings.error.message}</p>}
       <SettingsForm settings={(settings.data ?? []) as any} />
 
-      <h2 className="mb-2 mt-8 text-sm font-semibold uppercase tracking-wide text-(--steel)">Recent changes</h2>
+      <h2 className="mb-2 mt-8 text-sm font-semibold text-(--steel)">Recent changes</h2>
       <div className="panel">
         {(history.data ?? []).length === 0 && <p className="p-4 text-sm text-(--steel)">No changes yet — everything is at its default.</p>}
         {((history.data ?? []) as any[]).map((h) => (

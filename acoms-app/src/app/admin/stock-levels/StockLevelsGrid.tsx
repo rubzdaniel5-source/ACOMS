@@ -50,7 +50,7 @@ export function StockLevelsGrid({ stationId, equipment, overrides }: { stationId
       {msg && <p className={`rounded-sm px-3 py-2 text-sm ${msg.ok ? "text-(--teal)" : "text-(--brick)"}`} style={{ background: msg.ok ? "var(--teal-surface)" : "var(--brick-surface)" }}>{msg.text}</p>}
       <div className="panel max-h-[34rem] overflow-auto">
         <table className="w-full text-sm">
-          <thead className="sticky top-0 bg-(--color-surface) text-left text-xs uppercase text-(--steel)">
+          <thead className="sticky top-0 bg-(--color-surface) text-left text-xs text-(--steel)">
             <tr><th className="p-3">Equipment</th>{FIELDS.map((f) => <th key={f} className="p-3 text-right">{LABEL[f]}</th>)}</tr>
           </thead>
           <tbody>

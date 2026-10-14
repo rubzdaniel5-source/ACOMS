@@ -25,7 +25,7 @@ export default async function DamageLossDetailPage({
   if (error || !report) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <p className="rounded-md bg-(--color-danger-soft) px-4 py-3 text-sm text-(--color-danger)">
+        <p className="alert alert-danger">
           {error?.message ?? "Report not found."}
         </p>
       </div>
@@ -37,7 +37,7 @@ export default async function DamageLossDetailPage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-(--color-text)">
+        <h1 className="text-2xl font-semibold text-(--color-text)">
           {isLoss ? "Loss" : "Damage"} Report — {r.equipment_type?.source_code}
         </h1>
         <p className="text-sm text-(--color-text-subtle)">
@@ -45,12 +45,12 @@ export default async function DamageLossDetailPage({
         </p>
       </div>
 
-      <div className="mb-4 rounded-md bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
+      <div className="mb-4 rounded-lg bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
         <span className="font-medium">{isLoss ? "Circumstances" : "Reason"}: </span>
         {isLoss ? r.circumstances : r.reason}
       </div>
 
-      <div className="mb-6 rounded-lg border border-(--color-border) p-4 text-sm">
+      <div className="mb-6 panel p-4 text-sm">
         <div className="flex justify-between border-b border-(--color-border) py-2">
           <span className="text-(--color-text-subtle)">Status</span>
           <span className="font-medium text-(--color-text)">{r.status.replace(/_/g, " ")}</span>

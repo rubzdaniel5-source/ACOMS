@@ -20,10 +20,10 @@ export default async function ReconciliationPage() {
 
       <div className="panel overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-(--steel-light) text-left text-xs font-medium uppercase tracking-wide text-(--steel)">
+          <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
             <tr><th className="px-3 py-2">Transfer</th><th className="px-3 py-2">Route</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Action</th></tr>
           </thead>
-          <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+          <tbody className="divide-y">
             {(data ?? []).map((t: any) => (
               <tr key={t.id}>
                 <td className="px-3 py-2"><Link href={`/transfers/${t.id}`} className="id-code font-medium text-(--navy) hover:underline">{t.transfer_number}</Link></td>

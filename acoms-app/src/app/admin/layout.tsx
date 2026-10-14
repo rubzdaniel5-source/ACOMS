@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 py-8">
       <aside className="w-48 shrink-0">
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-(--steel)">Administration</h2>
+        <h2 className="mb-3 text-xs font-semibold text-(--steel)">Administration</h2>
         <AdminSubNav sections={sections} />
       </aside>
       <div className="min-w-0 flex-1">{children}</div>

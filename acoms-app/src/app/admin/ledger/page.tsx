@@ -78,7 +78,7 @@ export default async function LedgerPage({
 
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-(--steel)">
+          <thead className="text-left text-xs text-(--steel)">
             <tr>
               <th className="p-3">When</th>
               <th className="p-3">Station</th>
