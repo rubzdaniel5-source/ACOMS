@@ -29,3 +29,10 @@ Migration 024 adds `user_profiles.theme_preference` and `set_my_theme_preference
 
 ## ADR-013 — Action Required rules
 Alerts are built in `features/dashboard/alerts.ts` from RLS-scoped views, one alert per unresolved condition. Critical: critical shortage, transfer discrepancy. Warning: overdue transfer (thresholds from system settings), open loss report, open damage report, critical surplus. Attention: stock adjustment awaiting approval, shown only to holders of `approve_adjustment` and never for their own request. Sorted by severity, then kind, then urgency (shortfall units for stock, age for the rest). Plain shortages are not alerts. The dashboard shows 8; `/dashboard/action-required` lists all.
+
+## ADR-014: Phone install and offline behaviour
+
+- ACOMS is an installable web app (manifest, icons, service worker). It opens full-screen from a phone's home screen.
+- The service worker stores only the app's own static build files and a static offline screen. It never stores pages or data belonging to a signed-in user, so a shared or lost phone exposes nothing, and stock figures are never shown from memory.
+- Writes are never queued while offline. A banner says the screen may be out of date and changes cannot be saved. Reason: approvals, dispatches and counts depend on current stock; replaying them later could act on stale figures and break the requester ≠ approver and quantity rules.
+- Revisit queued offline writes only for a specific, low-risk action (for example saving a count as a draft) once operations asks for it.

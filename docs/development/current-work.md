@@ -56,3 +56,7 @@ Stage 7 done: migration 025 adds `transfers.reconciliation_overdue_days` (defaul
 
 1. **Reconciliation double-deducted damaged/missing units** from the destination's available stock and left the damaged/missing buckets at zero. Now each unit is credited as found, then moved out by a DAMAGE/LOSS entry, and a real damage or loss report is opened. Transfers reconciled before 026 keep their old figures; correct them with a stock adjustment if any exist.
 2. **Dispatch was not limited to the approved quantity** (and accepted items from other transfers). Now refused.
+
+## Phone and offline use (ADR-014)
+
+Installable app (`manifest.ts`, icons in `public/icons`), service worker `public/sw.js` (static files only), static `public/offline.html`, and an offline/back-online banner (`PwaClient`). Tested in Chromium: with the server down, navigation shows the offline screen. Production build only; the worker is not registered in `next dev`.

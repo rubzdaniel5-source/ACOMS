@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
@@ -7,6 +7,7 @@ import { getCurrentUserPermissions } from "@/features/auth/permissions";
 import { canEnterAdmin } from "@/features/admin/access";
 import { THEME_INIT_SCRIPT } from "@/features/theme/theme";
 import { ThemeSync } from "@/features/theme/ThemeSync";
+import { PwaClient } from "@/components/pwa/PwaClient";
 
 const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
@@ -23,6 +24,16 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "ACOMS — Airline Catering Operations Management System",
   description: "Airline Catering Operations Management System",
+  applicationName: "ACOMS",
+  appleWebApp: { capable: true, title: "ACOMS", statusBarStyle: "default" },
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#2563EB" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F172A" },
+  ],
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -53,6 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-(--color-bg) text-(--color-text)">
+        <PwaClient />
         {user && <ThemeSync accountTheme={accountTheme} />}
         {user && <NavBar userName={userName} showAdmin={showAdmin} />}
         {children}
