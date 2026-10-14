@@ -20,7 +20,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ACOMS",
+  title: "ACOMS — Airline Catering Operations Management System",
   description: "Airline Catering Operations Management System",
 };
 

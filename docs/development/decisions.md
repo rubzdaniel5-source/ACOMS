@@ -20,3 +20,6 @@ The workbook informs migration but does not define the production relational dat
 
 ## ADR-010 — UI/UX Design System (ACOMS-DESIGN-001)
 Two complete themes, Aero Blue (light, default) and Slate Modern (dark), driven by central semantic tokens in `globals.css` and switched by `data-theme` on `<html>`. Settings → Appearance offers Light / Dark / System. The preference is stored only in `localStorage` (key `acoms-theme`) and applied by an inline head script before first paint; account-level sync is a later option. Legacy colour names (`--navy`, `--steel`, etc.) are aliases of the theme tokens. Documented tuning: solid action fills use `--color-action` (dark mode uses the lighter blue with dark text to meet contrast). Icons are inline SVG (`components/ui/Icon.tsx`); no new dependency. Full spec: `docs/development/ACOMS_UI_UX_Specification.md`.
+
+## ADR-011 — Header branding
+Product name is "ACOMS — Airline Catering Operations Management System". The header shows ACOMS (about 26–29 px, bold) above the full name (12–13 px). New tokens `--color-header-bg/-border/-text/-text-muted/-hover` give a light Aero Blue band in Light mode and a deep slate band in Dark mode; the tab bar below stays on the surface colour.

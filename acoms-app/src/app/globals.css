@@ -42,6 +42,12 @@
   --color-danger-action: #B91C1C;
   --color-danger-action-hover: #991B1B;
   --color-on-primary-soft: #1E40AF;
+  /* Header band (ACOMS-DESIGN-001 7.1, branding refinement). */
+  --color-header-bg: #DCE9F8;
+  --color-header-border: #BCD0E8;
+  --color-header-text: #0F2A4A;
+  --color-header-text-muted: #3B536F;
+  --color-header-hover: #C9DBF2;
   --shadow-card: 0 1px 2px rgb(20 38 61 / 0.06);
   --shadow-raised: 0 8px 24px rgb(20 38 61 / 0.14);
 }
@@ -80,6 +86,11 @@
   --color-danger-action: #F87171;
   --color-danger-action-hover: #FCA5A5;
   --color-on-primary-soft: #BFDBFE;
+  --color-header-bg: #111C30;
+  --color-header-border: #334155;
+  --color-header-text: #F1F5F9;
+  --color-header-text-muted: #CBD5E1;
+  --color-header-hover: #24354B;
   --shadow-card: none;
   --shadow-raised: 0 8px 24px rgb(0 0 0 / 0.5);
 }
