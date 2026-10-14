@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ControlCard } from "@/components/ui/ControlCard";
-import { getCurrentUserPermissions } from "@/features/auth/permissions";
+import { getCurrentUserPermissions, getCurrentUserId } from "@/features/auth/permissions";
+import { buildAlerts, fetchAlertSources } from "@/features/dashboard/alerts";
+import { AlertList } from "@/components/ui/AlertList";
 import { StationInventoryTable, type InventoryRow } from "./station-inventory/StationInventoryTable";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [overview, inventory, movement, lossDamage, reconciliation, exceptions, perms] = await Promise.all([
+  const [overview, inventory, movement, lossDamage, reconciliation, perms] = await Promise.all([
     supabase.from("v_equipment_overview").select("*").single(),
     supabase
       .from("v_inventory_health")
@@ -15,9 +17,10 @@ export default async function DashboardPage() {
     supabase.from("v_movement_funnel").select("*").single(),
     supabase.from("v_loss_damage_summary").select("*").single(),
     supabase.from("v_reconciliation_summary").select("*").single(),
-    supabase.from("v_unresolved_exceptions").select("*").order("updated_at", { ascending: false }).limit(10),
     getCurrentUserPermissions(),
   ]);
+
+  const [sources, userId] = await Promise.all([fetchAlertSources(supabase, perms), getCurrentUserId()]);
 
   const invRows = (inventory.data ?? []) as (InventoryRow & { station_id: string })[];
   const health = { data: invRows };
@@ -32,7 +35,9 @@ export default async function DashboardPage() {
 
   // A missing result means the query failed, not that the count is zero (ACOMS-DESIGN-001 s21).
   const val = (row: any, key: string): number | string => (row ? (row[key] ?? 0) : "—");
-  const failed = [overview, inventory, movement, lossDamage, reconciliation, exceptions].some((r) => r.error);
+  const failed = [overview, inventory, movement, lossDamage, reconciliation, sources.exceptions, sources.overdue, sources.adjustments].some((r) => r.error);
+  const alerts = buildAlerts({ invRows, sources, perms, userId });
+  const SHOWN = 8;
   const updatedAt = new Intl.DateTimeFormat("en-GB", {
     day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Kampala",
   }).format(new Date());
@@ -140,53 +145,22 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Action Required — persistent, immediately beneath the six cards.
-          Combines transfer/damage/loss exceptions AND critical stock levels —
-          the Inventory Health card's numbers must never disagree with what
-          shows up here as something to act on. */}
-      <section className="mt-8">
-        <h2 className="mb-3 text-lg font-semibold text-(--color-text)">
-          Action Required
-        </h2>
-        {(exceptions.data && exceptions.data.length > 0) || (criticalStock.data && criticalStock.data.length > 0) ? (
-          <div className="panel divide-y divide-(--color-border)">
-            {(criticalStock.data ?? []).map((s: any) => (
-              <div key={`stock-${s.station_id}-${s.source_code}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
-                <span>
-                  <span className={`tag mr-2 ${s.status === "CRITICAL_SHORTAGE" ? "tag-brick" : "tag-surplus"}`}>
-                    {s.status === "CRITICAL_SHORTAGE" ? "Critical shortage" : "Critical surplus"}
-                  </span>
-                  {" — "}
-                  <span className="id-code text-(--color-text-muted)">{s.station_code}</span>{" "}
-                  has {s.current_stock} of <span className="id-code">{s.source_code}</span> {s.equipment_name}
-                  {s.minimum_level != null && ` (min ${s.minimum_level})`}
-                </span>
-                {perms.has("create_transfer") && (
-                  <Link href="/transfers/new" className="inline-flex min-h-11 items-center text-sm font-semibold text-(--color-primary) hover:underline">
-                    {s.status === "CRITICAL_SHORTAGE" ? "Request transfer" : "Redistribute"}
-                  </Link>
-                )}
-              </div>
-            ))}
-            {exceptions.data?.map((e: any) => {
-              const href =
-                e.exception_type === "TRANSFER_DISCREPANCY" ? `/transfers/${e.id}` : `/damage-loss/${e.id}?type=${e.exception_type === "LOSS_PENDING" ? "loss" : "damage"}`;
-              return (
-                <div key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
-                  <span>
-                    <span className="tag tag-brick mr-2">{e.exception_type.replace(/_/g, " ").toLowerCase().replace(/^./, (c: string) => c.toUpperCase())}</span>
-                    {" — "}
-                    <span className="id-code text-(--color-text-muted)">{e.reference}</span>
-                  </span>
-                  <Link href={href} className="text-sm inline-flex min-h-11 items-center font-semibold text-(--color-primary) hover:underline">
-                    View →
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
+      {/* Action Required: unified, de-duplicated alert centre (rules in features/dashboard/alerts.ts). */}
+      <section className="mt-8" aria-labelledby="action-required-heading">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <h2 id="action-required-heading" className="text-lg font-semibold text-(--color-text)">
+            Action Required{alerts.length > 0 && <span className="ml-2 text-sm font-normal text-(--color-text-muted)">{alerts.length} open</span>}
+          </h2>
+          {alerts.length > SHOWN && (
+            <Link href="/dashboard/action-required" className="inline-flex min-h-11 items-center text-sm font-semibold text-(--color-primary) hover:underline">
+              View all {alerts.length}
+            </Link>
+          )}
+        </div>
+        {failed && alerts.length === 0 ? (
+          <div className="alert alert-warning" role="alert">Alerts could not be fully loaded, so an empty list here is not confirmation that nothing needs action.</div>
         ) : (
-          <p className="text-sm text-(--color-text-muted)">No items currently require action.</p>
+          <AlertList alerts={alerts.slice(0, SHOWN)} />
         )}
       </section>
 

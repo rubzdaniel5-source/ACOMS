@@ -26,3 +26,6 @@ Product name is "ACOMS — Airline Catering Operations Management System". The h
 
 ## ADR-012 — Theme preference is account-synced
 Migration 024 adds `user_profiles.theme_preference` and `set_my_theme_preference(text)` (SECURITY DEFINER, own row only). Precedence: account preference, then this device's saved choice, then Light. The device copy in `localStorage` still drives the pre-paint script so there is no flash. Saving to the account is best-effort and never blocks the theme change. Supersedes the local-only storage note in ADR-010.
+
+## ADR-013 — Action Required rules
+Alerts are built in `features/dashboard/alerts.ts` from RLS-scoped views, one alert per unresolved condition. Critical: critical shortage, transfer discrepancy. Warning: overdue transfer (thresholds from system settings), open loss report, open damage report, critical surplus. Attention: stock adjustment awaiting approval, shown only to holders of `approve_adjustment` and never for their own request. Sorted by severity, then kind, then urgency (shortfall units for stock, age for the rest). Plain shortages are not alerts. The dashboard shows 8; `/dashboard/action-required` lists all.
