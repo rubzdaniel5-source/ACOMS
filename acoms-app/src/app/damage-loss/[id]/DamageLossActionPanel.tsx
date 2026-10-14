@@ -36,7 +36,7 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
 
   return (
     <div className="panel p-4 sm:p-5">
-      <h2 className="mb-3 text-sm font-semibold text-(--color-text)">Actions</h2>
+      <h2 className="mb-3 text-base font-semibold text-(--color-text)">Actions</h2>
       {error && <div className="mb-3 alert alert-danger">{error}</div>}
 
       {!isLoss && (

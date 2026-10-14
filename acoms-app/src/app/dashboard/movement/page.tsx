@@ -23,7 +23,7 @@ export default async function MovementPage() {
 
       <div className="panel overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
+          <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
             <tr>
               <th className="px-3 py-2">Transfer</th>
               <th className="px-3 py-2">Route</th>

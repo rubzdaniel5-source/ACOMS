@@ -73,7 +73,7 @@ export function StationManager({ stations, canEdit }: { stations: Station[]; can
 
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs text-(--steel)">
+          <thead className="text-left text-sm text-(--steel)">
             <tr><th className="p-3">Code</th><th className="p-3">Name</th><th className="p-3">Type</th><th className="p-3">Country</th><th className="p-3">Status</th><th className="p-3" /></tr>
           </thead>
           <tbody>

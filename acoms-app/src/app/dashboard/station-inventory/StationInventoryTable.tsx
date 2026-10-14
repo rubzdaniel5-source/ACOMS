@@ -176,7 +176,7 @@ export function StationInventoryTable({
       <div className="panel overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <caption className="sr-only">Station inventory against minimum levels</caption>
-          <thead className="bg-(--color-surface-subtle) text-left text-xs text-(--color-text-muted)">
+          <thead className="bg-(--color-surface-subtle) text-left text-sm text-(--color-text-muted)">
             <tr>
               {sortHead("station", "Station")}
               {sortHead("equipment", "Equipment")}

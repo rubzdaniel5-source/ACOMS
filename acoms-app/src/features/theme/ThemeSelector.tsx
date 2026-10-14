@@ -1,28 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEFAULT_THEME, THEME_KEY, type ThemePreference } from "./theme";
+import { applyTheme, DEFAULT_THEME, readLocalTheme, THEME_EVENT, writeLocalTheme, type ThemePreference } from "./theme";
+import { saveThemePreference } from "./actions";
 
 const OPTIONS: { value: ThemePreference; label: string; hint: string }[] = [
   { value: "light", label: "Light", hint: "Aero Blue, always" },
   { value: "dark", label: "Dark", hint: "Slate Modern, always" },
   { value: "system", label: "System", hint: "Follow this device" },
 ];
-
-function resolve(pref: ThemePreference): "light" | "dark" {
-  if (pref === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  }
-  return pref;
-}
-
-function readPreference(): ThemePreference {
-  try {
-    const v = localStorage.getItem(THEME_KEY);
-    if (v === "light" || v === "dark" || v === "system") return v;
-  } catch {}
-  return DEFAULT_THEME;
-}
 
 export function ThemeSelector() {
   const [pref, setPref] = useState<ThemePreference>(DEFAULT_THEME);
@@ -31,25 +17,27 @@ export function ThemeSelector() {
   useEffect(() => {
     // localStorage is only readable on the client; reading after mount avoids a hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPref(readPreference());
+    setPref(readLocalTheme() ?? DEFAULT_THEME);
     setReady(true);
+    const onSync = () => setPref(readLocalTheme() ?? DEFAULT_THEME);
+    window.addEventListener(THEME_EVENT, onSync);
+    return () => window.removeEventListener(THEME_EVENT, onSync);
   }, []);
 
   // Keep System mode in step with the device while it is selected.
   useEffect(() => {
     if (pref !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const apply = () => document.documentElement.setAttribute("data-theme", resolve("system"));
+    const apply = () => applyTheme("system");
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
   }, [pref]);
 
   function choose(next: ThemePreference) {
     setPref(next);
-    try {
-      localStorage.setItem(THEME_KEY, next);
-    } catch {}
-    document.documentElement.setAttribute("data-theme", resolve(next));
+    writeLocalTheme(next);
+    applyTheme(next);
+    void saveThemePreference(next);
   }
 
   return (
@@ -81,7 +69,7 @@ export function ThemeSelector() {
         ))}
       </div>
       <p className="mt-3 text-xs text-(--color-text-subtle)" role="status">
-        Saved on this device. Changing the theme does not affect your work or data.
+        Saved to your account and this device. Changing the theme does not affect your work or data.
       </p>
     </fieldset>
   );

@@ -62,7 +62,7 @@ export default async function TransferDetailPage({
 
       <div className="mb-6 panel overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
-          <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium text-(--color-text-subtle)">
+          <thead className="bg-(--color-surface-subtle) text-left text-sm font-medium text-(--color-text-subtle)">
             <tr>
               <th className="px-4 py-2">Equipment</th>
               <th className="px-4 py-2">Requested</th>

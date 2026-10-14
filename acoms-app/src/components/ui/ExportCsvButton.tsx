@@ -34,9 +34,10 @@ export function ExportCsvButton({ rows, filename }: { rows: Record<string, unkno
 
   return (
     <button
+      type="button"
       onClick={handleExport}
       disabled={rows.length === 0}
-      className="btn-secondary px-3 py-1.5 text-xs disabled:opacity-40"
+      className="btn-secondary min-h-11 px-4 text-sm"
     >
       Export CSV
     </button>

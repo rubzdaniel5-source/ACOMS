@@ -49,11 +49,11 @@ export default async function DamageLossPage({ searchParams }: { searchParams: P
       <ReportForm />
 
       {showDamage && (<section className="mt-10">
-        <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Damage Reports</h2>
+        <h2 className="mb-3 text-base font-semibold text-(--color-text-muted)">Damage Reports</h2>
         {damageReports.data && damageReports.data.length > 0 ? (
           <div className="panel overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium text-(--color-text-subtle)">
+              <thead className="bg-(--color-surface-subtle) text-left text-sm font-medium text-(--color-text-subtle)">
                 <tr>
                   <th className="px-4 py-2">Equipment</th>
                   <th className="px-4 py-2">Station</th>
@@ -86,11 +86,11 @@ export default async function DamageLossPage({ searchParams }: { searchParams: P
       </section>)}
 
       {showLoss && (<section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Loss Reports</h2>
+        <h2 className="mb-3 text-base font-semibold text-(--color-text-muted)">Loss Reports</h2>
         {lossReports.data && lossReports.data.length > 0 ? (
           <div className="panel overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium text-(--color-text-subtle)">
+              <thead className="bg-(--color-surface-subtle) text-left text-sm font-medium text-(--color-text-subtle)">
                 <tr>
                   <th className="px-4 py-2">Equipment</th>
                   <th className="px-4 py-2">Station</th>

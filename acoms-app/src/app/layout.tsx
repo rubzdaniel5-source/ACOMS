@@ -6,6 +6,7 @@ import { NavBar } from "@/components/ui/NavBar";
 import { getCurrentUserPermissions } from "@/features/auth/permissions";
 import { canEnterAdmin } from "@/features/admin/access";
 import { THEME_INIT_SCRIPT } from "@/features/theme/theme";
+import { ThemeSync } from "@/features/theme/ThemeSync";
 
 const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
@@ -32,6 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   let userName: string | null = null;
   let showAdmin = false;
+  let accountTheme: string | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from("user_profiles")
@@ -40,6 +42,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       .single();
     userName = profile?.full_name ?? null;
     showAdmin = canEnterAdmin(await getCurrentUserPermissions());
+    // Separate query: before migration 024 this column does not exist and must not hide the user name.
+    const { data: themeRow } = await supabase.from("user_profiles").select("theme_preference").eq("id", user.id).single();
+    accountTheme = (themeRow as { theme_preference?: string | null } | null)?.theme_preference ?? null;
   }
 
   return (
@@ -48,6 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-(--color-bg) text-(--color-text)">
+        {user && <ThemeSync accountTheme={accountTheme} />}
         {user && <NavBar userName={userName} showAdmin={showAdmin} />}
         {children}
       </body>

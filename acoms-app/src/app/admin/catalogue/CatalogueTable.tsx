@@ -47,7 +47,7 @@ export function CatalogueTable({ rows }: { rows: Row[] }) {
       </div>
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs text-(--steel)">
+          <thead className="text-left text-sm text-(--steel)">
             <tr><th className="p-3">Code</th><th className="p-3">Name</th><th className="p-3">Category</th>
               <th className="p-3 text-right">Reorder at</th><th className="p-3 text-right">Tolerance</th><th className="p-3">Status</th></tr>
           </thead>

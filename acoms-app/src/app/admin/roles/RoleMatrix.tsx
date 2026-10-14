@@ -42,7 +42,7 @@ export function RoleMatrix({ roles, permissions, myPerms, canEdit }: { roles: Ro
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-(--steel)">
+            <tr className="text-left text-sm text-(--steel)">
               <th className="sticky left-0 bg-(--color-surface) p-3">Permission</th>
               {roles.map((r) => <th key={r.id} className="p-3 text-center align-bottom" title={r.description ?? ""}>{r.name}</th>)}
             </tr>

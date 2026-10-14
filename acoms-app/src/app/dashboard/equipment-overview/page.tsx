@@ -31,7 +31,7 @@ export default async function EquipmentOverviewPage({ searchParams }: { searchPa
 
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
+          <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
             <tr>
               <th className="px-3 py-2">Equipment</th>
               <th className="px-3 py-2">Category</th>

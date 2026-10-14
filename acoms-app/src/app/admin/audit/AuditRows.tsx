@@ -28,7 +28,7 @@ export function AuditRows({ rows }: { rows: Row[] }) {
       </div>
       <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs text-(--steel)">
+          <thead className="text-left text-sm text-(--steel)">
             <tr><th className="p-3">When</th><th className="p-3">Person</th><th className="p-3">Action</th><th className="p-3">Record</th><th className="p-3">Station</th><th className="p-3">Reason</th></tr>
           </thead>
           <tbody>

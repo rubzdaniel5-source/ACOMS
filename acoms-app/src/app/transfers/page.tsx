@@ -65,7 +65,7 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
       {transfers && transfers.length > 0 && (
         <div className="panel overflow-hidden">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="bg-(--steel-light) text-left text-xs font-medium text-(--steel)">
+            <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
               <tr>
                 <th className="px-4 py-3">Transfer #</th>
                 <th className="px-4 py-3">Route</th>

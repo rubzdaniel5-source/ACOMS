@@ -49,7 +49,7 @@ export function NavBar({ userName, showAdmin }: { userName?: string | null; show
                 <Link
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center border-b-2 px-4 text-sm ${
+                  className={`inline-flex min-h-12 items-center border-b-2 px-5 text-base ${
                     active
                       ? "border-(--color-primary) bg-(--color-primary-soft) font-semibold text-(--color-on-primary-soft)"
                       : "border-transparent font-medium text-(--color-text-muted) hover:text-(--color-text)"

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { EquipmentTransfer, EquipmentTransferItem } from "@/types/transfers";
 import {
   approveTransferAction,
@@ -36,6 +37,11 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
   const [damaged, setDamaged] = useState<Record<string, number>>({});
   const [missing, setMissing] = useState<Record<string, number>>({});
   const [reasonText, setReasonText] = useState("");
+  // One themed confirmation for every consequential action. `go` runs only after the user confirms.
+  const [dialog, setDialog] = useState<null | {
+    title: string; description?: string; confirmLabel: string; danger?: boolean; reasonLabel?: string;
+    go: (reason: string) => Promise<void>;
+  }>(null);
 
   const has = (p: string) => permissions.includes(p);
   const isOwnRequest = currentUserId === transfer.requested_by;
@@ -56,9 +62,27 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
     router.refresh();
   }
 
+  async function confirmed(reason: string) {
+    const d = dialog;
+    if (!d) return;
+    await d.go(reason);
+    setDialog(null);
+  }
+
   return (
     <div className="panel p-4 sm:p-5">
-      <h2 className="mb-3 text-sm font-semibold text-(--color-text)">Actions</h2>
+      <ConfirmDialog
+        open={dialog !== null}
+        title={dialog?.title ?? ""}
+        description={dialog?.description}
+        confirmLabel={dialog?.confirmLabel ?? "Confirm"}
+        danger={dialog?.danger}
+        reasonLabel={dialog?.reasonLabel}
+        pending={pending}
+        onConfirm={confirmed}
+        onCancel={() => setDialog(null)}
+      />
+      <h2 className="mb-3 text-base font-semibold text-(--color-text)">Actions</h2>
 
       {error && (
         <div className="mb-3 alert alert-danger">{error}</div>
@@ -93,10 +117,16 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
               </button>
               <button
                 disabled={pending}
-                onClick={() => {
-                  const reason = window.prompt("Reason for rejection:");
-                  if (reason) run(() => rejectTransferAction(transfer.id, reason));
-                }}
+                onClick={() =>
+                  setDialog({
+                    title: "Reject this transfer?",
+                    description: "The requester will see the reason. A rejected transfer cannot be reopened.",
+                    confirmLabel: "Reject transfer",
+                    danger: true,
+                    reasonLabel: "Reason for rejection",
+                    go: (reason) => run(() => rejectTransferAction(transfer.id, reason)),
+                  })
+                }
                 className="btn-secondary min-h-11 px-5 text-sm"
               >
                 Reject
@@ -124,6 +154,11 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
           <button
             disabled={pending}
             onClick={() =>
+              setDialog({
+                title: "Dispatch this transfer?",
+                description: "Stock leaves the source station and is shown as in transit. Check the quantities first.",
+                confirmLabel: "Dispatch",
+                go: () =>
               run(() =>
                 dispatchTransferAction(
                   transfer.id,
@@ -132,7 +167,8 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                     quantity_dispatched: qty(it.id, it.quantity_approved ?? it.quantity_requested),
                   }))
                 )
-              )
+              ),
+              })
             }
             className="btn-primary min-h-11 px-5 text-sm"
           >
@@ -210,6 +246,11 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
           <button
             disabled={pending}
             onClick={() =>
+              setDialog({
+                title: "Reconcile this transfer?",
+                description: "Damaged and missing quantities are recorded against the transfer. Differences beyond tolerance open a discrepancy.",
+                confirmLabel: "Reconcile",
+                go: () =>
               run(() =>
                 reconcileTransferAction(
                   transfer.id,
@@ -219,7 +260,8 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                     quantity_missing: missing[it.id] ?? 0,
                   }))
                 )
-              )
+              ),
+              })
             }
             className="btn-primary min-h-11 px-5 text-sm"
           >
@@ -231,7 +273,14 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
       {transfer.status === "RECONCILIATION" && has("reconcile_transfer") && (
         <button
           disabled={pending}
-          onClick={() => run(() => closeTransferAction(transfer.id))}
+          onClick={() =>
+            setDialog({
+              title: "Close this transfer?",
+              description: "A closed transfer is final. Make sure reconciliation is complete.",
+              confirmLabel: "Close transfer",
+              go: () => run(() => closeTransferAction(transfer.id)),
+            })
+          }
           className="btn-primary min-h-11 px-5 text-sm"
         >
           Close Transfer
