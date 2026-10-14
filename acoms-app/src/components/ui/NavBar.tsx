@@ -19,25 +19,28 @@ export function NavBar({ userName, showAdmin }: { userName?: string | null; show
   return (
     <header className="border-b border-(--color-header-border)">
       <div className="bg-(--color-header-bg)">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-3 py-2 sm:px-6">
-          <Link href="/dashboard" className="flex flex-col leading-tight text-(--color-header-text)" aria-label="ACOMS, Airline Catering Operations Management System, dashboard">
-            <span className="text-[1.65rem] font-bold tracking-tight sm:text-[1.8rem]">ACOMS</span>
-            <span className="text-xs text-(--color-header-text-muted) sm:text-[0.8125rem]">
-              Airline Catering Operations Management System
-            </span>
+        <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-x-3 px-3 py-2 sm:px-6">
+          <Link
+            href="/dashboard"
+            aria-label="ACOMS, Airline Catering Operations Management System, dashboard"
+            className="text-[1.65rem] font-bold leading-tight tracking-tight text-(--color-header-text) sm:text-[1.8rem]"
+          >
+            ACOMS
           </Link>
-          <div className="flex items-center gap-1 text-(--color-header-text)">
-            {userName && (
-              <span className="mr-1 hidden max-w-40 truncate text-sm sm:inline">{userName}</span>
-            )}
+          {/* Always the right-hand cell of the first row, so it stays right-aligned at every width. */}
+          <div className="col-start-2 row-start-1 flex items-center justify-end gap-0.5 text-(--color-header-text) sm:row-span-2 sm:gap-1">
+            {userName && <span className="mr-1 hidden max-w-40 truncate text-sm sm:inline">{userName}</span>}
             <Link
               href="/settings"
-              className="inline-flex min-h-11 items-center rounded-md px-3 text-sm font-medium hover:bg-(--color-header-hover)"
+              className="inline-flex min-h-11 items-center rounded-md px-2.5 text-sm font-medium hover:bg-(--color-header-hover) sm:px-3"
             >
               Settings
             </Link>
             <LogoutButton />
           </div>
+          <p className="col-span-2 -mt-0.5 text-xs leading-snug text-(--color-header-text-muted) sm:col-span-1 sm:text-[0.8125rem]">
+            Airline Catering Operations Management System
+          </p>
         </div>
       </div>
       <nav aria-label="Primary" className="border-t border-(--color-header-border) bg-(--color-surface)">
