@@ -3,16 +3,31 @@ import { createClient } from "@/lib/supabase/server";
 import { TransferStatusBadge } from "@/components/ui/TransferStatusBadge";
 import type { EquipmentTransfer } from "@/types/transfers";
 
-export default async function TransfersPage() {
+const VIEW_LABEL: Record<string, string> = {
+  REQUESTED: "Awaiting approval",
+  APPROVED: "Awaiting dispatch",
+  IN_TRANSIT: "In transit",
+  RECEIVED: "Awaiting reconciliation",
+  RECONCILIATION: "Reconciled, pending close",
+  DISCREPANCY: "Discrepancies",
+  CLOSED: "Closed",
+  open: "Requiring action",
+};
+
+export default async function TransfersPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  const { status } = await searchParams;
   const supabase = await createClient();
 
-  const { data: transfers, error } = await supabase
+  let query = supabase
     .from("equipment_transfers")
     .select(
       "id, transfer_number, status, priority, reason, requested_at, from_station:from_station_id(id, code, name), to_station:to_station_id(id, code, name)"
     )
     .order("requested_at", { ascending: false })
     .limit(50);
+  if (status === "open") query = query.not("status", "in", "(CLOSED,REJECTED,CANCELLED)");
+  else if (status && VIEW_LABEL[status]) query = query.eq("status", status);
+  const { data: transfers, error } = await query;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -27,6 +42,13 @@ export default async function TransfersPage() {
           New Transfer
         </Link>
       </div>
+
+      {status && VIEW_LABEL[status] && (
+        <p className="mb-4 flex flex-wrap items-center gap-3 text-sm text-(--color-text-muted)">
+          Showing: <span className="tag tag-info">{VIEW_LABEL[status]}</span>
+          <Link href="/transfers" className="font-semibold text-(--color-primary) hover:underline">Show all transfers</Link>
+        </p>
+      )}
 
       {error && (
         <div className="panel px-4 py-3 text-sm text-(--brick)" style={{ borderColor: "var(--color-danger)" }}>

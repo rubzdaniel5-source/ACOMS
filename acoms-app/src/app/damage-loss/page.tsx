@@ -2,21 +2,35 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ReportForm } from "./ReportForm";
 
-export default async function DamageLossPage() {
+const VIEWS: Record<string, string> = {
+  missing: "Missing equipment (open loss reports)",
+  damaged: "Damaged equipment (open damage reports)",
+  investigation: "Under investigation",
+  confirmed: "Confirmed losses",
+};
+
+export default async function DamageLossPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const { view: rawView } = await searchParams;
+  const view = rawView && VIEWS[rawView] ? rawView : undefined;
+  const showDamage = !view || view === "damaged";
+  const showLoss = !view || view !== "damaged";
   const supabase = await createClient();
 
-  const [damageReports, lossReports] = await Promise.all([
-    supabase
+  let damageQ = supabase
       .from("damage_reports")
       .select("id, status, quantity, reason, reported_at, station:station_id(code), equipment_type:equipment_type_id(source_code, name)")
       .order("reported_at", { ascending: false })
-      .limit(50),
-    supabase
+      .limit(50);
+  if (view === "damaged") damageQ = damageQ.not("status", "in", "(RETURNED_TO_SERVICE,DISPOSED)");
+  let lossQ = supabase
       .from("loss_reports")
       .select("id, status, quantity, circumstances, reported_at, station:station_id(code), equipment_type:equipment_type_id(source_code, name)")
       .order("reported_at", { ascending: false })
-      .limit(50),
-  ]);
+      .limit(50);
+  if (view === "missing") lossQ = lossQ.in("status", ["REPORTED", "INVESTIGATION"]);
+  if (view === "investigation") lossQ = lossQ.eq("status", "INVESTIGATION");
+  if (view === "confirmed") lossQ = lossQ.in("status", ["CONFIRMED_LOSS", "CLOSED"]);
+  const [damageReports, lossReports] = await Promise.all([damageQ, lossQ]);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -25,9 +39,16 @@ export default async function DamageLossPage() {
         Standalone reports — equipment damaged or lost outside a transfer.
       </p>
 
+      {view && (
+        <p className="mb-4 flex flex-wrap items-center gap-3 text-sm text-(--color-text-muted)">
+          Showing: <span className="tag tag-info">{VIEWS[view]}</span>
+          <Link href="/damage-loss" className="font-semibold text-(--color-primary) hover:underline">Show all reports</Link>
+        </p>
+      )}
+
       <ReportForm />
 
-      <section className="mt-10">
+      {showDamage && (<section className="mt-10">
         <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Damage Reports</h2>
         {damageReports.data && damageReports.data.length > 0 ? (
           <div className="overflow-hidden rounded-lg border border-(--color-border)">
@@ -62,9 +83,9 @@ export default async function DamageLossPage() {
         ) : (
           <p className="text-sm text-(--color-text-subtle)">No damage reports yet.</p>
         )}
-      </section>
+      </section>)}
 
-      <section className="mt-8">
+      {showLoss && (<section className="mt-8">
         <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Loss Reports</h2>
         {lossReports.data && lossReports.data.length > 0 ? (
           <div className="overflow-hidden rounded-lg border border-(--color-border)">
@@ -99,7 +120,7 @@ export default async function DamageLossPage() {
         ) : (
           <p className="text-sm text-(--color-text-subtle)">No loss reports yet.</p>
         )}
-      </section>
+      </section>)}
     </div>
   );
 }

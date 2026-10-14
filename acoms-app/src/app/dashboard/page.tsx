@@ -1,22 +1,29 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ControlCard } from "@/components/ui/ControlCard";
+import { getCurrentUserPermissions } from "@/features/auth/permissions";
+import { StationInventoryTable, type InventoryRow } from "./station-inventory/StationInventoryTable";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [overview, health, movement, lossDamage, reconciliation, exceptions, criticalStock] = await Promise.all([
+  const [overview, inventory, movement, lossDamage, reconciliation, exceptions, perms] = await Promise.all([
     supabase.from("v_equipment_overview").select("*").single(),
-    supabase.from("v_inventory_health").select("status"),
+    supabase
+      .from("v_inventory_health")
+      .select("station_id, station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status"),
     supabase.from("v_movement_funnel").select("*").single(),
     supabase.from("v_loss_damage_summary").select("*").single(),
     supabase.from("v_reconciliation_summary").select("*").single(),
     supabase.from("v_unresolved_exceptions").select("*").order("updated_at", { ascending: false }).limit(10),
-    supabase
-      .from("v_inventory_health")
-      .select("station_id, station_code, source_code, equipment_name, current_stock, minimum_level, status")
-      .in("status", ["CRITICAL_SHORTAGE", "CRITICAL_SURPLUS"]),
+    getCurrentUserPermissions(),
   ]);
+
+  const invRows = (inventory.data ?? []) as (InventoryRow & { station_id: string })[];
+  const health = { data: invRows };
+  const criticalStock = {
+    data: invRows.filter((r) => r.status === "CRITICAL_SHORTAGE" || r.status === "CRITICAL_SURPLUS"),
+  };
 
   const healthCounts = (health.data ?? []).reduce<Record<string, number>>((acc, r: any) => {
     acc[r.status] = (acc[r.status] ?? 0) + 1;
@@ -55,14 +62,14 @@ export default async function DashboardPage() {
           href="/dashboard/inventory-health"
           headline={
             (healthCounts["CRITICAL_SHORTAGE"] ?? 0) > 0
-              ? { value: healthCounts["CRITICAL_SHORTAGE"], label: "Critical Shortages" }
+              ? { value: healthCounts["CRITICAL_SHORTAGE"], label: "Critical Shortages", href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE" }
               : { value: healthCounts["NORMAL"] ?? 0, label: "Items at Normal Stock" }
           }
           stats={[
-            { label: "Shortages", value: healthCounts["SHORTAGE"] ?? 0, tone: "amber" },
-            { label: "Normal", value: healthCounts["NORMAL"] ?? 0, tone: "teal" },
-            { label: "Surplus", value: healthCounts["SURPLUS"] ?? 0 },
-            { label: "Critical Surplus", value: healthCounts["CRITICAL_SURPLUS"] ?? 0, tone: "brick" },
+            { label: "Shortages", value: healthCounts["SHORTAGE"] ?? 0, tone: "amber", href: "/dashboard/station-inventory?status=SHORTAGE" },
+            { label: "Normal", value: healthCounts["NORMAL"] ?? 0, tone: "teal", href: "/dashboard/station-inventory?status=NORMAL" },
+            { label: "Surplus", value: healthCounts["SURPLUS"] ?? 0, href: "/dashboard/station-inventory?status=SURPLUS" },
+            { label: "Critical Surplus", value: healthCounts["CRITICAL_SURPLUS"] ?? 0, tone: "brick", href: "/dashboard/station-inventory?status=CRITICAL_SURPLUS" },
           ]}
         />
 
@@ -70,12 +77,12 @@ export default async function DashboardPage() {
           title="Equipment Movement & Exchange"
           icon="swap"
           href="/dashboard/movement"
-          headline={{ value: m?.total_requiring_action ?? 0, label: "Transfers Requiring Action" }}
+          headline={{ value: m?.total_requiring_action ?? 0, label: "Transfers Requiring Action", href: "/transfers?status=open" }}
           stats={[
-            { label: "Awaiting Approval", value: m?.awaiting_approval ?? 0, tone: "amber" },
-            { label: "Awaiting Dispatch", value: m?.awaiting_dispatch ?? 0 },
-            { label: "In Transit", value: m?.in_transit ?? 0 },
-            { label: "Disputed", value: m?.disputed ?? 0, tone: "brick" },
+            { label: "Awaiting Approval", value: m?.awaiting_approval ?? 0, tone: "amber", href: "/transfers?status=REQUESTED" },
+            { label: "Awaiting Dispatch", value: m?.awaiting_dispatch ?? 0, href: "/transfers?status=APPROVED" },
+            { label: "In Transit", value: m?.in_transit ?? 0, href: "/transfers?status=IN_TRANSIT" },
+            { label: "Disputed", value: m?.disputed ?? 0, tone: "brick", href: "/transfers?status=DISCREPANCY" },
           ]}
         />
 
@@ -85,10 +92,10 @@ export default async function DashboardPage() {
           href="/dashboard/loss-damage"
           headline={{ value: ld?.open_exceptions_total ?? 0, label: "Open Exceptions" }}
           stats={[
-            { label: "Missing Equipment", value: ld?.missing_open_count ?? 0, tone: "brick" },
-            { label: "Damaged Equipment", value: ld?.damaged_open_count ?? 0, tone: "amber" },
-            { label: "Under Investigation", value: ld?.under_investigation ?? 0 },
-            { label: "Confirmed Losses", value: ld?.confirmed_losses ?? 0 },
+            { label: "Missing Equipment", value: ld?.missing_open_count ?? 0, tone: "brick", href: "/damage-loss?view=missing" },
+            { label: "Damaged Equipment", value: ld?.damaged_open_count ?? 0, tone: "amber", href: "/damage-loss?view=damaged" },
+            { label: "Under Investigation", value: ld?.under_investigation ?? 0, href: "/damage-loss?view=investigation" },
+            { label: "Confirmed Losses", value: ld?.confirmed_losses ?? 0, href: "/damage-loss?view=confirmed" },
           ]}
         />
 
@@ -96,11 +103,11 @@ export default async function DashboardPage() {
           title="Reconciliation Control"
           icon="check"
           href="/dashboard/reconciliation"
-          headline={{ value: rc?.awaiting_reconciliation ?? 0, label: "Awaiting Reconciliation" }}
+          headline={{ value: rc?.awaiting_reconciliation ?? 0, label: "Awaiting Reconciliation", href: "/transfers?status=RECEIVED" }}
           stats={[
-            { label: "Reconciled (Pending Close)", value: rc?.reconciled_pending_close ?? 0 },
-            { label: "Discrepancies", value: rc?.discrepancies ?? 0, tone: "brick" },
-            { label: "Closed (Total)", value: rc?.closed_total ?? 0, tone: "teal" },
+            { label: "Reconciled (Pending Close)", value: rc?.reconciled_pending_close ?? 0, href: "/transfers?status=RECONCILIATION" },
+            { label: "Discrepancies", value: rc?.discrepancies ?? 0, tone: "brick", href: "/transfers?status=DISCREPANCY" },
+            { label: "Closed (Total)", value: rc?.closed_total ?? 0, tone: "teal", href: "/transfers?status=CLOSED" },
           ]}
         />
 
@@ -111,8 +118,9 @@ export default async function DashboardPage() {
           headline={{
             value: new Set((criticalStock.data ?? []).map((r: any) => r.station_id)).size,
             label: "Stations Requiring Attention",
+            href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE,CRITICAL_SURPLUS",
           }}
-          stats={[{ label: "Critical items", value: criticalStock.data?.length ?? 0, tone: "brick" }]}
+          stats={[{ label: "Critical items", value: criticalStock.data.length, tone: "brick", href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE,CRITICAL_SURPLUS" }]}
         />
       </div>
 
@@ -137,9 +145,11 @@ export default async function DashboardPage() {
                   has {s.current_stock} of <span className="id-code">{s.source_code}</span> {s.equipment_name}
                   {s.minimum_level != null && ` (min ${s.minimum_level})`}
                 </span>
-                <Link href="/transfers/new" className="text-sm inline-flex min-h-11 items-center font-semibold text-(--color-primary) hover:underline">
-                  {s.status === "CRITICAL_SHORTAGE" ? "Request Transfer →" : "Redistribute →"}
-                </Link>
+                {perms.has("create_transfer") && (
+                  <Link href="/transfers/new" className="inline-flex min-h-11 items-center text-sm font-semibold text-(--color-primary) hover:underline">
+                    {s.status === "CRITICAL_SHORTAGE" ? "Request transfer" : "Redistribute"}
+                  </Link>
+                )}
               </div>
             ))}
             {exceptions.data?.map((e: any) => {
@@ -161,6 +171,25 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <p className="text-sm text-(--color-text-muted)">No items currently require action.</p>
+        )}
+      </section>
+
+      <section className="mt-8" aria-labelledby="station-inventory-heading">
+        <h2 id="station-inventory-heading" className="mb-1 text-lg font-semibold text-(--color-text)">Station Inventory</h2>
+        <p className="mb-3 text-sm text-(--color-text-muted)">
+          Worst positions first. <Link href="/dashboard/station-inventory" className="font-semibold text-(--color-primary) hover:underline">Open the full view</Link>
+        </p>
+        {inventory.error ? (
+          <div className="alert alert-danger" role="alert">
+            Station inventory could not be loaded. Refresh the page to try again.
+          </div>
+        ) : (
+          <StationInventoryTable
+            rows={invRows}
+            canRequestTransfer={perms.has("create_transfer")}
+            pageSize={10}
+            detailsBase="/dashboard/station-inventory"
+          />
         )}
       </section>
     </div>
