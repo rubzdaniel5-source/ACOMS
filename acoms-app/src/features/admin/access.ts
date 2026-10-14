@@ -29,6 +29,24 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     anyOf: ["manage_roles", "manage_users"],
   },
   {
+    href: "/admin/catalogue",
+    label: "Equipment Catalogue",
+    description: "Add and edit equipment, stock levels, tolerances and aliases; import from CSV.",
+    anyOf: ["manage_catalogue"],
+  },
+  {
+    href: "/admin/data-quality",
+    label: "Data Quality",
+    description: "Replace placeholder equipment codes with confirmed ones.",
+    anyOf: ["manage_catalogue"],
+  },
+  {
+    href: "/admin/stations",
+    label: "Stations",
+    description: "Add stations and set whether each one holds stock.",
+    anyOf: ["manage_configuration"],
+  },
+  {
     href: "/admin/ledger",
     label: "Inventory Ledger",
     description: "Every stock movement ever recorded, with who did it and why.",
