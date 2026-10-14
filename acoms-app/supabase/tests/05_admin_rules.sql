@@ -71,14 +71,13 @@ select test.as_user('mgr_ebb');
 select approve_transfer(test.get('D'), jsonb_build_array(jsonb_build_object('item_id', test.line('D','C058'), 'quantity_approved', 5)), null);
 select test.as_user('asst_ebb');
 select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('D','C058'), 'quantity_dispatched', 1000)))$$, test.get('D')),
-  'chk_balances_non_negative', 'dispatch: cannot send more than the source holds');
+  'approved for 5', 'dispatch: an oversized dispatch is refused');
 select test.as_root();
 select test.eq_int(test.avail('EBB','C058'), 65, 'dispatch: a failed dispatch leaves stock untouched (atomic)');
 select test.ok(test.status('D') = 'APPROVED', 'dispatch: a failed dispatch leaves the transfer APPROVED');
--- KNOWN ISSUE (reported, awaiting a decision): dispatch is not limited to the approved quantity.
 select test.as_user('asst_ebb');
-select test.known(not test.probe(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('D','C058'), 'quantity_dispatched', 30)))$$, test.get('D'))),
-  'dispatch: cannot send more than was approved (approved 5, 30 was accepted)');
+select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('D','C058'), 'quantity_dispatched', 30)))$$, test.get('D')),
+  'approved for 5', 'dispatch: cannot send more than was approved');
 select test.as_root();
 
 -- ===== v_pending_transfers: overdue logic ========================================

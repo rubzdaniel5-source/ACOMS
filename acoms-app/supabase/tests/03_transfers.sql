@@ -128,12 +128,12 @@ select test.as_user('mgr_abj');
 select test.ok((select reconcile_transfer(test.get('C'), jsonb_build_array(jsonb_build_object('item_id', test.line('C','C081'), 'quantity_damaged', 1, 'quantity_missing', 2)), 'explained')) = 'RECONCILIATION',
   'C: 10 sent = 7 received + 1 damaged + 2 missing reconciles');
 select test.as_root();
--- KNOWN ISSUE (reported, awaiting a decision): reconcile_transfer debits DAMAGE/LOSS from the
--- destination's AVAILABLE stock, but those units were never received into it, so they are
--- deducted twice, and the damaged/missing buckets are never filled. ABJ should hold 6 + 7 = 13.
-select test.known(test.avail('ABJ','C081') = 13, 'C: destination available stock is not double-deducted for damaged/missing units (got ' || test.avail('ABJ','C081') || ', expected 13)');
-select test.known(test.bal('ABJ','C081','damaged_quantity') = 1, 'C: the damaged unit appears in the damaged bucket');
-select test.known(test.bal('ABJ','C081','missing_quantity') = 2, 'C: the missing units appear in the missing bucket');
+-- Damaged and missing units must not be deducted twice. ABJ holds 6 (from B) + 7 (from C) = 13.
+select test.eq_int(test.avail('ABJ','C081'), 13, 'C: destination available stock is not double-deducted for damaged/missing units');
+select test.eq_int(test.bal('ABJ','C081','damaged_quantity'), 1, 'C: the damaged unit appears in the damaged bucket');
+select test.eq_int(test.bal('ABJ','C081','missing_quantity'), 2, 'C: the missing units appear in the missing bucket');
+select test.eq_int((select count(*) from damage_reports where station_id = test.st('ABJ') and quantity = 1 and status = 'REPORTED'), 1, 'C: a damage report is opened for the damaged unit');
+select test.eq_int((select count(*) from loss_reports where station_id = test.st('ABJ') and quantity = 2 and status = 'REPORTED'), 1, 'C: a loss report is opened for the missing units');
 select test.eq_int(test.bal('EBB','C081','in_transit_quantity'), 0, 'C: in-transit is cleared at the source');
 
 -- ===== Whole-system consistency =================================================
@@ -146,4 +146,18 @@ select test.ok(exists (select 1 from audit_logs where action = 'transfer.close')
 
 
 select 1;
+
+-- Reconcile/dispatch only accept lines that belong to the transfer, and no negatives.
+select test.as_user('asst_ebb');
+select test.put('E', request_transfer(test.st('EBB'), test.st('ABJ'),
+  jsonb_build_array(jsonb_build_object('equipment_type_id', test.eq('C058'), 'quantity', 2)), 'test E', 'NORMAL'));
+select test.as_user('mgr_ebb');
+select approve_transfer(test.get('E'), jsonb_build_array(jsonb_build_object('item_id', test.line('E','C058'), 'quantity_approved', 2)), null);
+select test.as_user('asst_ebb');
+select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('A','C058'), 'quantity_dispatched', 1)))$$, test.get('E')),
+  'does not belong', 'E: an item from another transfer is refused');
+select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('E','C058'), 'quantity_dispatched', -1)))$$, test.get('E')),
+  'negative', 'E: a negative dispatch quantity is refused');
+select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('E','C058'), 'quantity_dispatched', 3)))$$, test.get('E')),
+  'approved for 2', 'E: dispatching more than was approved is refused');
 select test.finish('03_transfers.sql');

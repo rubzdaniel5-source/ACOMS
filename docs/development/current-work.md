@@ -48,11 +48,11 @@ Stage 7 done: migration 025 adds `transfers.reconciliation_overdue_days` (defaul
 
 ## Automated tests
 
-- **Database** (`acoms-app/supabase/tests/`, `npm run test:db`): applies all migrations to a throwaway Postgres and acts as real users. 143 checks cover the ledger (lock-down, immutability, opening balances), the transfer lifecycle (permissions, station scope, requester ≠ approver, discrepancy blocks closing), stock adjustments (two-person approval, stock-changed guard), users and roles (no escalation, deactivation, locked admin role), settings validation, the overdue view and audit rows.
+- **Database** (`acoms-app/supabase/tests/`, `npm run test:db`): applies all migrations to a throwaway Postgres and acts as real users. 152 checks cover the ledger (lock-down, immutability, opening balances), the transfer lifecycle (permissions, station scope, requester ≠ approver, discrepancy blocks closing), stock adjustments (two-person approval, stock-changed guard), users and roles (no escalation, deactivation, locked admin role), settings validation, the overdue view and audit rows.
 - **App** (`acoms-app/tests/`, `npm test`): Action Required rules (`alerts.ts`) and the 1,000-row paging helper (`fetchAll.ts`).
 - **CI**: `.github/workflows/tests.yml` runs both, plus `tsc`, on every push and pull request.
 
-### Bugs found by the tests (reported, not yet fixed; marked `test.known`)
+### Bugs found by the tests (fixed in migration 026)
 
-1. **Reconciliation double-deducts damaged/missing units.** `reconcile_transfer` debits DAMAGE/LOSS from the destination's *available* stock, but those units were never received into it. The damaged and missing buckets are also left at zero. Example: 10 sent, 7 received, 1 damaged, 2 missing leaves 4 available instead of 7.
-2. **Dispatch is not limited to the approved quantity.** A dispatcher can send more than was approved, up to what the source holds.
+1. **Reconciliation double-deducted damaged/missing units** from the destination's available stock and left the damaged/missing buckets at zero. Now each unit is credited as found, then moved out by a DAMAGE/LOSS entry, and a real damage or loss report is opened. Transfers reconciled before 026 keep their old figures; correct them with a stock adjustment if any exist.
+2. **Dispatch was not limited to the approved quantity** (and accepted items from other transfers). Now refused.

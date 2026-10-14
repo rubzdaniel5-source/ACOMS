@@ -12,7 +12,7 @@ Run them (needs a Postgres superuser connection; each run creates and drops its 
 Files run in order. `01_fixtures.sql` creates one user per role and scope. A failing check stops
 the run with a non-zero exit code.
 
-`test.known(...)` marks a bug that has been reported but not fixed yet. It never fails the run;
+`test.known(...)` marks a bug that has been reported but not fixed yet (none at the moment). It never fails the run;
 when the bug is fixed the line prints `FIXED (promote to a normal check)`.
 
 Add a test for every new migration that changes a business rule.
