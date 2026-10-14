@@ -59,6 +59,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     anyOf: ["request_adjustment", "approve_adjustment"],
   },
   {
+    href: "/admin/settings",
+    label: "System Settings",
+    description: "Edit the rules behind stock alerts, overdue transfers and default tolerances.",
+    anyOf: ["manage_configuration"],
+  },
+  {
     href: "/admin/ledger",
     label: "Inventory Ledger",
     description: "Every stock movement ever recorded, with who did it and why.",
