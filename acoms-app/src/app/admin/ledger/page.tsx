@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAnyPermission } from "@/features/admin/access";
 
 const PAGE_SIZE = 50;
-const TYPES = ["OPENING_BALANCE", "RECEIPT", "TRANSFER_OUT", "TRANSFER_IN", "RETURN", "DAMAGE", "LOSS", "ADJUSTMENT", "DISPOSAL", "RECOVERY"];
+const TYPES = ["OPENING_BALANCE", "RECEIPT", "TRANSFER_OUT", "TRANSFER_IN", "RETURN", "DAMAGE", "LOSS", "ADJUSTMENT", "ADJUSTMENT_DECREASE", "DISPOSAL", "RECOVERY"];
 
 export default async function LedgerPage({
   searchParams,
@@ -64,7 +64,7 @@ export default async function LedgerPage({
           <select name="type" defaultValue={sp.type ?? ""} className="rounded-sm border border-(--border) px-2 py-1.5 text-sm">
             <option value="">All</option>
             {TYPES.map((t) => (
-              <option key={t} value={t}>{t.replace("_", " ")}</option>
+              <option key={t} value={t}>{t.replace(/_/g, " ")}</option>
             ))}
           </select>
         </div>
@@ -98,7 +98,7 @@ export default async function LedgerPage({
                 <td className="whitespace-nowrap p-3">{new Date(r.created_at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</td>
                 <td className="id-code p-3">{r.station_code}</td>
                 <td className="p-3">{r.equipment_name}</td>
-                <td className="p-3"><span className="tag tag-neutral">{r.transaction_type.replace("_", " ")}</span></td>
+                <td className="p-3"><span className="tag tag-neutral">{r.transaction_type.replace(/_/g, " ")}</span></td>
                 <td className={`p-3 text-right font-medium ${r.quantity < 0 ? "text-(--brick)" : "text-(--teal)"}`}>
                   {r.quantity > 0 ? `+${r.quantity}` : r.quantity}
                 </td>

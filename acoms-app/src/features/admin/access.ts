@@ -47,6 +47,18 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     anyOf: ["manage_configuration"],
   },
   {
+    href: "/admin/stock-levels",
+    label: "Station Stock Levels",
+    description: "Set reorder thresholds and stock levels separately for each station.",
+    anyOf: ["manage_catalogue"],
+  },
+  {
+    href: "/admin/adjustments",
+    label: "Stock Adjustments",
+    description: "Request corrections to stock; a second person approves before the ledger changes.",
+    anyOf: ["request_adjustment", "approve_adjustment"],
+  },
+  {
     href: "/admin/ledger",
     label: "Inventory Ledger",
     description: "Every stock movement ever recorded, with who did it and why.",
@@ -55,7 +67,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
 ];
 
 /** Permission codes that make the Admin area visible at all. */
-export const ADMIN_ENTRY_PERMISSIONS = ["record_opening_balance", "manage_users", "manage_roles", "manage_catalogue", "manage_configuration"];
+export const ADMIN_ENTRY_PERMISSIONS = ["record_opening_balance", "manage_users", "manage_roles", "manage_catalogue", "manage_configuration", "request_adjustment", "approve_adjustment"];
 
 export function visibleSections(perms: Set<string>): AdminSection[] {
   return ADMIN_SECTIONS.filter((s) => s.anyOf.some((p) => perms.has(p)));
