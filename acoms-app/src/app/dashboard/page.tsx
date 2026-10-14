@@ -29,15 +29,16 @@ export default async function DashboardPage() {
   const rc = reconciliation.data as any;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-(--navy)">Equipment Control Dashboard</h1>
-        <p className="text-sm text-(--steel)">Operational control centre — what needs your attention, and where.</p>
+        <h1 className="text-2xl font-semibold text-(--color-text)">Equipment Control Dashboard</h1>
+        <p className="text-sm text-(--color-text-muted)">Operational control centre — what needs your attention, and where.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         <ControlCard
           title="Equipment Overview"
+          icon="boxes"
           href="/dashboard/equipment-overview"
           headline={{ value: o?.grand_total ?? 0, label: "Total Equipment" }}
           stats={[
@@ -50,8 +51,13 @@ export default async function DashboardPage() {
 
         <ControlCard
           title="Inventory Health"
+          icon="gauge"
           href="/dashboard/inventory-health"
-          headline={{ value: healthCounts["CRITICAL_SHORTAGE"] ?? 0, label: "Critical Shortages" }}
+          headline={
+            (healthCounts["CRITICAL_SHORTAGE"] ?? 0) > 0
+              ? { value: healthCounts["CRITICAL_SHORTAGE"], label: "Critical Shortages" }
+              : { value: healthCounts["NORMAL"] ?? 0, label: "Items at Normal Stock" }
+          }
           stats={[
             { label: "Shortages", value: healthCounts["SHORTAGE"] ?? 0, tone: "amber" },
             { label: "Normal", value: healthCounts["NORMAL"] ?? 0, tone: "teal" },
@@ -62,6 +68,7 @@ export default async function DashboardPage() {
 
         <ControlCard
           title="Equipment Movement & Exchange"
+          icon="swap"
           href="/dashboard/movement"
           headline={{ value: m?.total_requiring_action ?? 0, label: "Transfers Requiring Action" }}
           stats={[
@@ -74,6 +81,7 @@ export default async function DashboardPage() {
 
         <ControlCard
           title="Loss & Damage Control"
+          icon="alert"
           href="/dashboard/loss-damage"
           headline={{ value: ld?.open_exceptions_total ?? 0, label: "Open Exceptions" }}
           stats={[
@@ -86,6 +94,7 @@ export default async function DashboardPage() {
 
         <ControlCard
           title="Reconciliation Control"
+          icon="check"
           href="/dashboard/reconciliation"
           headline={{ value: rc?.awaiting_reconciliation ?? 0, label: "Awaiting Reconciliation" }}
           stats={[
@@ -97,12 +106,13 @@ export default async function DashboardPage() {
 
         <ControlCard
           title="Station Inventory"
+          icon="building"
           href="/dashboard/station-inventory"
           headline={{
-            value: Object.entries(healthCounts).filter(([k]) => k === "CRITICAL_SHORTAGE" || k === "CRITICAL_SURPLUS").reduce((s, [, v]) => s + v, 0),
+            value: new Set((criticalStock.data ?? []).map((r: any) => r.station_id)).size,
             label: "Stations Requiring Attention",
           }}
-          stats={[{ label: "Search & filter all stations", value: "→" }]}
+          stats={[{ label: "Critical items", value: criticalStock.data?.length ?? 0, tone: "brick" }]}
         />
       </div>
 
@@ -111,24 +121,23 @@ export default async function DashboardPage() {
           the Inventory Health card's numbers must never disagree with what
           shows up here as something to act on. */}
       <section className="mt-8">
-        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-(--brick)">
-          ⚠ Action Required
+        <h2 className="mb-3 text-lg font-semibold text-(--color-text)">
+          Action Required
         </h2>
         {(exceptions.data && exceptions.data.length > 0) || (criticalStock.data && criticalStock.data.length > 0) ? (
-          <div className="panel divide-y" style={{ borderColor: "var(--border)" }}>
+          <div className="panel divide-y divide-(--color-border)">
             {(criticalStock.data ?? []).map((s: any) => (
-              <div key={`stock-${s.station_id}-${s.source_code}`} className="flex items-center justify-between px-4 py-3 text-sm">
+              <div key={`stock-${s.station_id}-${s.source_code}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <span>
-                  <span className="text-(--brick)">🔴</span>{" "}
-                  <span className="font-medium text-(--foreground)">
-                    {s.status === "CRITICAL_SHORTAGE" ? "Critical Shortage" : "Critical Surplus"}
+                  <span className={`tag mr-2 ${s.status === "CRITICAL_SHORTAGE" ? "tag-brick" : "tag-surplus"}`}>
+                    {s.status === "CRITICAL_SHORTAGE" ? "Critical shortage" : "Critical surplus"}
                   </span>
                   {" — "}
-                  <span className="id-code text-(--steel)">{s.station_code}</span>{" "}
+                  <span className="id-code text-(--color-text-muted)">{s.station_code}</span>{" "}
                   has {s.current_stock} of <span className="id-code">{s.source_code}</span> {s.equipment_name}
                   {s.minimum_level != null && ` (min ${s.minimum_level})`}
                 </span>
-                <Link href="/transfers/new" className="text-sm font-semibold text-(--navy) hover:underline">
+                <Link href="/transfers/new" className="text-sm inline-flex min-h-11 items-center font-semibold text-(--color-primary) hover:underline">
                   {s.status === "CRITICAL_SHORTAGE" ? "Request Transfer →" : "Redistribute →"}
                 </Link>
               </div>
@@ -137,14 +146,13 @@ export default async function DashboardPage() {
               const href =
                 e.exception_type === "TRANSFER_DISCREPANCY" ? `/transfers/${e.id}` : `/damage-loss/${e.id}?type=${e.exception_type === "LOSS_PENDING" ? "loss" : "damage"}`;
               return (
-                <div key={e.id} className="flex items-center justify-between px-4 py-3 text-sm">
+                <div key={e.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                   <span>
-                    <span className="text-(--brick)">🔴</span>{" "}
-                    <span className="font-medium text-(--foreground)">{e.exception_type.replace(/_/g, " ")}</span>
+                    <span className="tag tag-brick mr-2">{e.exception_type.replace(/_/g, " ").toLowerCase().replace(/^./, (c: string) => c.toUpperCase())}</span>
                     {" — "}
-                    <span className="id-code text-(--steel)">{e.reference}</span>
+                    <span className="id-code text-(--color-text-muted)">{e.reference}</span>
                   </span>
-                  <Link href={href} className="text-sm font-semibold text-(--navy) hover:underline">
+                  <Link href={href} className="text-sm inline-flex min-h-11 items-center font-semibold text-(--color-primary) hover:underline">
                     View →
                   </Link>
                 </div>
@@ -152,7 +160,7 @@ export default async function DashboardPage() {
             })}
           </div>
         ) : (
-          <p className="text-sm text-(--steel)">No items currently require action.</p>
+          <p className="text-sm text-(--color-text-muted)">No items currently require action.</p>
         )}
       </section>
     </div>

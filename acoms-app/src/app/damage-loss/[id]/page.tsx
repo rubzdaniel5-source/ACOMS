@@ -25,7 +25,7 @@ export default async function DamageLossDetailPage({
   if (error || !report) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-md bg-(--color-danger-soft) px-4 py-3 text-sm text-(--color-danger)">
           {error?.message ?? "Report not found."}
         </p>
       </div>
@@ -37,34 +37,34 @@ export default async function DamageLossDetailPage({
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-slate-900">
+        <h1 className="text-xl font-semibold text-(--color-text)">
           {isLoss ? "Loss" : "Damage"} Report — {r.equipment_type?.source_code}
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-(--color-text-subtle)">
           {r.equipment_type?.name} · {r.station?.code} ({r.station?.name}) · Qty {r.quantity}
         </p>
       </div>
 
-      <div className="mb-4 rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-700">
+      <div className="mb-4 rounded-md bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
         <span className="font-medium">{isLoss ? "Circumstances" : "Reason"}: </span>
         {isLoss ? r.circumstances : r.reason}
       </div>
 
-      <div className="mb-6 rounded-lg border border-slate-200 p-4 text-sm">
-        <div className="flex justify-between border-b border-slate-100 py-2">
-          <span className="text-slate-500">Status</span>
-          <span className="font-medium text-slate-900">{r.status.replace(/_/g, " ")}</span>
+      <div className="mb-6 rounded-lg border border-(--color-border) p-4 text-sm">
+        <div className="flex justify-between border-b border-(--color-border) py-2">
+          <span className="text-(--color-text-subtle)">Status</span>
+          <span className="font-medium text-(--color-text)">{r.status.replace(/_/g, " ")}</span>
         </div>
         {r.assessment_outcome && (
-          <div className="flex justify-between border-b border-slate-100 py-2">
-            <span className="text-slate-500">Assessment Outcome</span>
-            <span className="font-medium text-slate-900">{r.assessment_outcome}</span>
+          <div className="flex justify-between border-b border-(--color-border) py-2">
+            <span className="text-(--color-text-subtle)">Assessment Outcome</span>
+            <span className="font-medium text-(--color-text)">{r.assessment_outcome}</span>
           </div>
         )}
         {(r.resolution_notes || r.assessment_notes) && (
           <div className="py-2">
-            <span className="text-slate-500">Notes</span>
-            <p className="mt-1 text-slate-700">{r.resolution_notes || r.assessment_notes}</p>
+            <span className="text-(--color-text-subtle)">Notes</span>
+            <p className="mt-1 text-(--color-text-muted)">{r.resolution_notes || r.assessment_notes}</p>
           </div>
         )}
       </div>

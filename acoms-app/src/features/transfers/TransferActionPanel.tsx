@@ -57,17 +57,17 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 p-5">
-      <h2 className="mb-3 text-sm font-semibold text-slate-900">Actions</h2>
+    <div className="rounded-lg border border-(--color-border) p-5">
+      <h2 className="mb-3 text-sm font-semibold text-(--color-text)">Actions</h2>
 
       {error && (
-        <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="mb-3 rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</div>
       )}
 
       {transfer.status === "REQUESTED" && (
         <div className="space-y-3">
           {isOwnRequest && has("approve_transfer") && (
-            <p className="text-xs text-amber-600">
+            <p className="text-xs text-(--color-warning)">
               You requested this transfer — per policy you cannot approve your own request (ADR-007).
               Another approver needs to action this.
             </p>
@@ -87,7 +87,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                     )
                   )
                 }
-                className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+                className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
               >
                 Approve
               </button>
@@ -97,7 +97,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                   const reason = window.prompt("Reason for rejection:");
                   if (reason) run(() => rejectTransferAction(transfer.id, reason));
                 }}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="rounded-md border border-(--color-border-strong) px-4 py-2 text-sm font-medium text-(--color-text-muted) hover:bg-(--color-surface-hover) disabled:opacity-50"
               >
                 Reject
               </button>
@@ -108,7 +108,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
       {transfer.status === "APPROVED" && has("dispatch_transfer") && (
         <div className="space-y-3">
-          <p className="text-xs text-slate-500">Confirm actual dispatched quantities:</p>
+          <p className="text-xs text-(--color-text-subtle)">Confirm actual dispatched quantities:</p>
           {items.map((it) => (
             <div key={it.id} className="flex items-center justify-between gap-3 text-sm">
               <span>{it.equipment_type?.source_code} — {it.equipment_type?.name}</span>
@@ -117,7 +117,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 min={0}
                 defaultValue={it.quantity_approved ?? it.quantity_requested}
                 onChange={(e) => setQuantities((q) => ({ ...q, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1"
+                className="w-24 rounded-md border border-(--color-border-strong) px-2 py-1"
               />
             </div>
           ))}
@@ -134,7 +134,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 )
               )
             }
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
           >
             Confirm Dispatch
           </button>
@@ -143,7 +143,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
       {transfer.status === "IN_TRANSIT" && has("receive_transfer") && (
         <div className="space-y-3">
-          <p className="text-xs text-slate-500">Enter actual quantities received:</p>
+          <p className="text-xs text-(--color-text-subtle)">Enter actual quantities received:</p>
           {items.map((it) => (
             <div key={it.id} className="flex items-center justify-between gap-3 text-sm">
               <span>{it.equipment_type?.source_code} — {it.equipment_type?.name}</span>
@@ -152,7 +152,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 min={0}
                 defaultValue={it.quantity_dispatched ?? 0}
                 onChange={(e) => setQuantities((q) => ({ ...q, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1"
+                className="w-24 rounded-md border border-(--color-border-strong) px-2 py-1"
               />
             </div>
           ))}
@@ -169,7 +169,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 )
               )
             }
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
           >
             Confirm Receipt
           </button>
@@ -178,7 +178,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
       {transfer.status === "RECEIVED" && has("reconcile_transfer") && (
         <div className="space-y-3">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-(--color-text-subtle)">
             Record any damaged or missing quantities. Differences beyond each item&apos;s tolerance
             will open a discrepancy that must be investigated before closing.
           </p>
@@ -186,23 +186,23 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
             <div key={it.id} className="grid grid-cols-3 gap-2 text-sm">
               <span className="col-span-1 self-center">{it.equipment_type?.source_code}</span>
               <div>
-                <label className="text-xs text-slate-500">Damaged</label>
+                <label className="text-xs text-(--color-text-subtle)">Damaged</label>
                 <input
                   type="number"
                   min={0}
                   defaultValue={0}
                   onChange={(e) => setDamaged((d) => ({ ...d, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                  className="w-full rounded-md border border-slate-300 px-2 py-1"
+                  className="w-full rounded-md border border-(--color-border-strong) px-2 py-1"
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-500">Missing</label>
+                <label className="text-xs text-(--color-text-subtle)">Missing</label>
                 <input
                   type="number"
                   min={0}
                   defaultValue={0}
                   onChange={(e) => setMissing((m) => ({ ...m, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                  className="w-full rounded-md border border-slate-300 px-2 py-1"
+                  className="w-full rounded-md border border-(--color-border-strong) px-2 py-1"
                 />
               </div>
             </div>
@@ -221,7 +221,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
                 )
               )
             }
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
           >
             Reconcile
           </button>
@@ -232,7 +232,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
         <button
           disabled={pending}
           onClick={() => run(() => closeTransferAction(transfer.id))}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
         >
           Close Transfer
         </button>
@@ -240,7 +240,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
       {transfer.status === "DISCREPANCY" && has("reconcile_transfer") && (
         <div className="space-y-3">
-          <p className="text-xs text-red-600">
+          <p className="text-xs text-(--color-danger)">
             This transfer has an unexplained discrepancy beyond tolerance. It cannot be closed until
             resolved with a documented reason.
           </p>
@@ -249,12 +249,12 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
             onChange={(e) => setReasonText(e.target.value)}
             rows={2}
             placeholder="Explain the investigation outcome..."
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
           />
           <button
             disabled={pending || reasonText.trim().length === 0}
             onClick={() => run(() => resolveDiscrepancyAction(transfer.id, reasonText))}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
           >
             Resolve Discrepancy
           </button>
@@ -262,7 +262,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
       )}
 
       {["CLOSED", "REJECTED", "CANCELLED"].includes(transfer.status) && (
-        <p className="text-sm text-slate-500">This transfer is finalized. No further action available.</p>
+        <p className="text-sm text-(--color-text-subtle)">This transfer is finalized. No further action available.</p>
       )}
     </div>
   );

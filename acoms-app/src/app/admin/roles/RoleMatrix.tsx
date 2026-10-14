@@ -43,14 +43,14 @@ export function RoleMatrix({ roles, permissions, myPerms, canEdit }: { roles: Ro
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase text-(--steel)">
-              <th className="sticky left-0 bg-white p-3">Permission</th>
+              <th className="sticky left-0 bg-(--color-surface) p-3">Permission</th>
               {roles.map((r) => <th key={r.id} className="p-3 text-center align-bottom" title={r.description ?? ""}>{r.name}</th>)}
             </tr>
           </thead>
           <tbody>
             {permissions.map((p) => (
               <tr key={p.code} className="border-t border-(--border)">
-                <td className="sticky left-0 bg-white p-3">
+                <td className="sticky left-0 bg-(--color-surface) p-3">
                   <div className="id-code">{p.code}</div>
                   <div className="text-xs text-(--steel)">{p.description}</div>
                 </td>

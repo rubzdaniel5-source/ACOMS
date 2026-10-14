@@ -15,7 +15,7 @@ export function AdjustmentsTable({ rows, me, canApprove }: { rows: Row[]; me: st
   const shown = tab === "approve" ? pendingForMe : tab === "mine" ? rows.filter((r) => r.requested_by === me) : rows;
 
   const tabBtn = (key: typeof tab, label: string, count?: number) => (
-    <button onClick={() => setTab(key)} className={`rounded-sm px-3 py-1.5 text-sm font-medium ${tab === key ? "bg-(--navy) text-white" : "text-(--steel) hover:bg-(--steel-light)"}`}>
+    <button onClick={() => setTab(key)} className={`rounded-sm px-3 py-1.5 text-sm font-medium ${tab === key ? "bg-(--navy) text-(--color-on-action)" : "text-(--steel) hover:bg-(--steel-light)"}`}>
       {label}{count !== undefined ? ` (${count})` : ""}
     </button>
   );

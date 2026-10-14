@@ -35,15 +35,15 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 p-5">
-      <h2 className="mb-3 text-sm font-semibold text-slate-900">Actions</h2>
-      {error && <div className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>}
+    <div className="rounded-lg border border-(--color-border) p-5">
+      <h2 className="mb-3 text-sm font-semibold text-(--color-text)">Actions</h2>
+      {error && <div className="mb-3 rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</div>}
 
       {!isLoss && (
         <>
           {report.status === "REPORTED" && has("report_damage") && (
             <button disabled={pending} onClick={() => run(() => startDamageReviewAction(report.id))}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+              className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
               Start Review
             </button>
           )}
@@ -52,14 +52,14 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
             <div className="space-y-3">
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
                 placeholder="Assessment notes..."
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm" />
               <div className="flex gap-2">
                 <button disabled={pending} onClick={() => run(() => assessDamageAction(report.id, "REPAIRABLE", notes))}
-                  className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+                  className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
                   Assess: Repairable
                 </button>
                 <button disabled={pending} onClick={() => run(() => assessDamageAction(report.id, "RETIRE", notes))}
-                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+                  className="rounded-md border border-(--color-border-strong) px-4 py-2 text-sm font-medium text-(--color-text-muted) hover:bg-(--color-surface-hover) disabled:opacity-50">
                   Assess: Retire
                 </button>
               </div>
@@ -68,34 +68,34 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
 
           {report.status === "ASSESSED" && report.assessment_outcome === "REPAIRABLE" && has("report_damage") && (
             <button disabled={pending} onClick={() => run(() => startRepairAction(report.id))}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+              className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
               Start Repair
             </button>
           )}
 
           {report.status === "REPAIR" && has("report_damage") && (
             <button disabled={pending} onClick={() => run(() => returnToServiceAction(report.id))}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+              className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
               Return to Service
             </button>
           )}
 
           {report.status === "ASSESSED" && report.assessment_outcome === "RETIRE" && has("report_damage") && (
             <button disabled={pending} onClick={() => run(() => retireEquipmentAction(report.id))}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+              className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
               Retire Equipment
             </button>
           )}
 
           {report.status === "RETIRED" && has("manage_catalogue") && (
             <button disabled={pending} onClick={() => run(() => disposeEquipmentAction(report.id))}
-              className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
+              className="rounded-md bg-(--color-danger-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-danger-action-hover) disabled:opacity-50">
               Dispose (Permanent Write-off)
             </button>
           )}
 
           {["RETURNED_TO_SERVICE", "DISPOSED"].includes(report.status) && (
-            <p className="text-sm text-slate-500">This report is finalized.</p>
+            <p className="text-sm text-(--color-text-subtle)">This report is finalized.</p>
           )}
         </>
       )}
@@ -104,7 +104,7 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
         <>
           {report.status === "REPORTED" && has("confirm_loss") && (
             <button disabled={pending} onClick={() => run(() => startLossInvestigationAction(report.id))}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+              className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
               Start Investigation
             </button>
           )}
@@ -113,15 +113,15 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
             <div className="space-y-3">
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
                 placeholder="Investigation findings / resolution notes..."
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+                className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm" />
               <div className="flex gap-2">
                 <button disabled={pending} onClick={() => run(() => recoverLossAction(report.id, notes))}
-                  className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+                  className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
                   Mark Recovered
                 </button>
                 <button disabled={pending || notes.trim().length === 0}
                   onClick={() => run(() => confirmLossAction(report.id, notes))}
-                  className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
+                  className="rounded-md bg-(--color-danger-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-danger-action-hover) disabled:opacity-50">
                   Confirm Loss (requires notes)
                 </button>
               </div>
@@ -130,13 +130,13 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
 
           {report.status === "CONFIRMED_LOSS" && has("confirm_loss") && (
             <button disabled={pending} onClick={() => run(() => closeLossReportAction(report.id))}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50">
+              className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50">
               Close Report
             </button>
           )}
 
           {["RECOVERED", "CLOSED"].includes(report.status) && (
-            <p className="text-sm text-slate-500">This report is finalized.</p>
+            <p className="text-sm text-(--color-text-subtle)">This report is finalized.</p>
           )}
         </>
       )}

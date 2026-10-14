@@ -29,41 +29,41 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-1 text-xl font-semibold text-slate-900">ACOMS</h1>
-        <p className="mb-6 text-sm text-slate-500">Sign in to continue</p>
+    <div className="flex min-h-screen items-center justify-center bg-(--color-surface-subtle) px-4">
+      <div className="w-full max-w-sm rounded-lg border border-(--color-border) bg-(--color-surface) p-8 shadow-sm">
+        <h1 className="mb-1 text-xl font-semibold text-(--color-text)">ACOMS</h1>
+        <p className="mb-6 text-sm text-(--color-text-subtle)">Sign in to continue</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm focus:border-(--color-primary) focus:outline-none"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Password</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm focus:border-(--color-primary) focus:outline-none"
             />
           </div>
 
           {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+            <p className="rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="w-full rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

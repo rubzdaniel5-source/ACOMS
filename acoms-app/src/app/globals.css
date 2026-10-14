@@ -1,94 +1,234 @@
 @import "tailwindcss";
 
-:root {
-  --background: #F4F6F8;
-  --foreground: #16202B;
+/* ACOMS design tokens — ACOMS-DESIGN-001.
+   Two complete themes share one component structure. The root attribute
+   data-theme="light" | "dark" selects the map; light (Aero Blue) is the default
+   when no attribute is present. Never use literal colours in components. */
 
-  --navy: #14243B;
-  --navy-light: #1E3A5A;
-  --steel: #3D5A73;
-  --steel-light: #E4E9ED;
-  --amber: #C4720C;
-  --amber-surface: #FBF0E0;
-  --brick: #9C2B2B;
-  --brick-surface: #F7E7E7;
-  --teal: #1F6F5C;
-  --teal-surface: #E6F0EC;
-  --card: #FFFFFF;
-  --border: #D7DEE3;
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #F3F7FC;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-subtle: #EAF1FA;
+  --color-surface-hover: #F0F5FC;
+  --color-border: #D7E1EE;
+  --color-border-strong: #B9C9DD;
+  --color-text: #14263D;
+  --color-text-muted: #52657D;
+  --color-text-subtle: #5B6F88;
+  --color-primary: #2563EB;
+  --color-primary-strong: #1D4ED8;
+  --color-primary-soft: #DBEAFE;
+  --color-focus: #2563EB;
+  --color-success: #15803D;
+  --color-success-soft: #DCFCE7;
+  --color-info: #0369A1;
+  --color-info-soft: #E0F2FE;
+  --color-warning: #B45309;
+  --color-warning-soft: #FEF3C7;
+  --color-danger: #B91C1C;
+  --color-danger-soft: #FEE2E2;
+  --color-surplus: #6D28D9;
+  --color-surplus-soft: #EDE9FE;
+  --color-neutral: #64748B;
+  --color-neutral-soft: #E2E8F0;
+  /* Derived (documented tuning): solid action fills + text that sits on them,
+     and link/badge text on the soft primary surface. */
+  --color-action: #1D4ED8;
+  --color-action-hover: #1E40AF;
+  --color-on-action: #FFFFFF;
+  --color-danger-action: #B91C1C;
+  --color-danger-action-hover: #991B1B;
+  --color-on-primary-soft: #1E40AF;
+  --shadow-card: 0 1px 2px rgb(20 38 61 / 0.06);
+  --shadow-raised: 0 8px 24px rgb(20 38 61 / 0.14);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0F172A;
+  --color-surface: #172337;
+  --color-surface-raised: #1E293B;
+  --color-surface-subtle: #1B2A40;
+  --color-surface-hover: #24354B;
+  --color-border: #334155;
+  --color-border-strong: #475569;
+  --color-text: #F1F5F9;
+  --color-text-muted: #CBD5E1;
+  --color-text-subtle: #A3B3C7;
+  --color-primary: #60A5FA;
+  --color-primary-strong: #3B82F6;
+  --color-primary-soft: #1E3A5F;
+  --color-focus: #93C5FD;
+  --color-success: #4ADE80;
+  --color-success-soft: #123B2A;
+  --color-info: #7DD3FC;
+  --color-info-soft: #12354A;
+  --color-warning: #FBBF24;
+  --color-warning-soft: #453313;
+  --color-danger: #F87171;
+  --color-danger-soft: #451D24;
+  --color-surplus: #C4B5FD;
+  --color-surplus-soft: #352451;
+  --color-neutral: #CBD5E1;
+  --color-neutral-soft: #334155;
+  --color-action: #60A5FA;
+  --color-action-hover: #93C5FD;
+  --color-on-action: #0F172A;
+  --color-danger-action: #F87171;
+  --color-danger-action-hover: #FCA5A5;
+  --color-on-primary-soft: #BFDBFE;
+  --shadow-card: none;
+  --shadow-raised: 0 8px 24px rgb(0 0 0 / 0.5);
+}
+
+/* Legacy names. Existing screens still reference these; they now resolve to the
+   theme tokens, so nothing renders in the old palette. Prefer --color-* in new code. */
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-surface);
+  --border: var(--color-border);
+  --navy: var(--color-text);
+  --navy-light: var(--color-text-muted);
+  --steel: var(--color-text-muted);
+  --steel-light: var(--color-surface-subtle);
+  --amber: var(--color-warning);
+  --amber-surface: var(--color-warning-soft);
+  --brick: var(--color-danger);
+  --brick-surface: var(--color-danger-soft);
+  --teal: var(--color-success);
+  --teal-surface: var(--color-success-soft);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-navy: var(--navy);
-  --color-steel: var(--steel);
-  --color-amber: var(--amber);
-  --color-brick: var(--brick);
-  --color-teal: var(--teal);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
   --font-sans: var(--font-plex-sans);
   --font-mono: var(--font-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
-/* Identifiers — transfer numbers, equipment codes, quantities — always
-   render in mono. This is functional (scan-accuracy for codes like RZ001
-   vs RZO01), not decorative, matching how manifests/boarding passes use
-   fixed-width type for codes. */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Identifiers — transfer numbers, equipment codes, quantities — render in mono
+   (scan accuracy for codes like RZ001 vs RZO01). */
 .id-code {
   font-family: var(--font-mono);
   letter-spacing: 0.01em;
 }
 
-/* Flat, bordered surfaces — deliberately not soft-shadow rounded cards. */
 .panel {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Form controls: every input/select/textarea is themed here so pages do not
+   need their own colours. */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-subtle);
+}
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-subtle);
 }
 
 .btn-primary {
-  background: var(--navy);
-  color: white;
-  border-radius: 3px;
-  font-weight: 500;
+  background: var(--color-action);
+  color: var(--color-on-action);
+  border-radius: 6px;
+  font-weight: 600;
 }
-.btn-primary:hover {
-  background: var(--navy-light);
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-action-hover);
 }
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
   background: transparent;
-  color: var(--navy);
-  border: 1px solid var(--border);
-  border-radius: 3px;
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
   font-weight: 500;
 }
-.btn-secondary:hover {
-  background: var(--steel-light);
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+.btn-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
-/* Status tags — rectangular, like cargo/baggage tags, not soft pills.
-   Text always accompanies color (accessibility — never color alone). */
+.btn-danger {
+  background: var(--color-danger-action);
+  color: var(--color-on-action);
+  border-radius: 6px;
+  font-weight: 600;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-action-hover);
+}
+.btn-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Status tags. Text always accompanies colour. Semantics (ACOMS-DESIGN-001 5.3):
+   success = healthy/complete, info/primary = informational, warning = attention,
+   danger = critical, surplus = purple, neutral = closed/inactive. */
 .tag {
   display: inline-flex;
   align-items: center;
-  border-radius: 2px;
-  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  padding: 0.125rem 0.625rem;
   font-size: 0.75rem;
   font-weight: 600;
   border: 1px solid transparent;
 }
-.tag-neutral { background: var(--steel-light); color: var(--steel); }
-.tag-amber { background: var(--amber-surface); color: var(--amber); border-color: #EAD3AC; }
-.tag-brick { background: var(--brick-surface); color: var(--brick); border-color: #E2BEBE; }
-.tag-teal { background: var(--teal-surface); color: var(--teal); border-color: #BEDBD1; }
-.tag-navy { background: var(--steel-light); color: var(--navy); }
+.tag-neutral { background: var(--color-neutral-soft); color: var(--color-neutral); }
+.tag-navy,
+.tag-info { background: var(--color-primary-soft); color: var(--color-on-primary-soft); }
+.tag-amber { background: var(--color-warning-soft); color: var(--color-warning); }
+.tag-brick { background: var(--color-danger-soft); color: var(--color-danger); }
+.tag-teal { background: var(--color-success-soft); color: var(--color-success); }
+.tag-surplus { background: var(--color-surplus-soft); color: var(--color-surplus); }
 
+/* Alert banners (errors / notices). */
+.alert { border-radius: 8px; padding: 0.625rem 0.875rem; font-size: 0.875rem; border: 1px solid transparent; }
+.alert-danger { background: var(--color-danger-soft); color: var(--color-danger); border-color: var(--color-danger); }
+.alert-success { background: var(--color-success-soft); color: var(--color-success); border-color: var(--color-success); }
+.alert-warning { background: var(--color-warning-soft); color: var(--color-warning); border-color: var(--color-warning); }
+.alert-info { background: var(--color-info-soft); color: var(--color-info); border-color: var(--color-info); }

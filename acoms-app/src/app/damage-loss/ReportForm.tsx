@@ -50,17 +50,17 @@ export function ReportForm() {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 p-5">
+    <div className="rounded-lg border border-(--color-border) p-5">
       <div className="mb-4 flex gap-2">
         <button
           onClick={() => setMode("damage")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === "damage" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === "damage" ? "bg-(--color-action) text-(--color-on-action)" : "bg-(--color-surface-subtle) text-(--color-text-muted)"}`}
         >
           Report Damage
         </button>
         <button
           onClick={() => setMode("loss")}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === "loss" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600"}`}
+          className={`rounded-md px-3 py-1.5 text-sm font-medium ${mode === "loss" ? "bg-(--color-action) text-(--color-on-action)" : "bg-(--color-surface-subtle) text-(--color-text-muted)"}`}
         >
           Report Loss
         </button>
@@ -69,12 +69,12 @@ export function ReportForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Station</label>
+            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Station</label>
             <select
               required
               value={stationId}
               onChange={(e) => setStationId(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
             >
               <option value="">Select...</option>
               {stations.map((s) => (
@@ -83,25 +83,25 @@ export function ReportForm() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Quantity</label>
+            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Quantity</label>
             <input
               type="number"
               min={1}
               required
               value={quantity}
               onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 0)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Equipment</label>
+          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Equipment</label>
           <select
             required
             value={equipmentTypeId}
             onChange={(e) => setEquipmentTypeId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
           >
             <option value="">Select...</option>
             {equipmentTypes.map((et) => (
@@ -111,7 +111,7 @@ export function ReportForm() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">
             {mode === "damage" ? "Reason" : "Circumstances"}
           </label>
           <textarea
@@ -119,17 +119,17 @@ export function ReportForm() {
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
             placeholder={mode === "damage" ? "e.g. Cracked during handling at receiving" : "e.g. Not found during morning count, last seen..."}
           />
         </div>
 
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
         >
           {submitting ? "Submitting..." : `Submit ${mode === "damage" ? "Damage" : "Loss"} Report`}
         </button>

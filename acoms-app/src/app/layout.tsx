@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NavBar } from "@/components/ui/NavBar";
 import { getCurrentUserPermissions } from "@/features/auth/permissions";
 import { canEnterAdmin } from "@/features/admin/access";
+import { THEME_INIT_SCRIPT } from "@/features/theme/theme";
 
 const plexSans = IBM_Plex_Sans({
   variable: "--font-plex-sans",
@@ -42,8 +43,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html lang="en" className={`h-full antialiased ${plexSans.variable} ${plexMono.variable}`}>
-      <body className="min-h-full flex flex-col font-sans bg-(--background) text-(--foreground)">
+    <html lang="en" suppressHydrationWarning className={`h-full antialiased ${plexSans.variable} ${plexMono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-full flex flex-col font-sans bg-(--color-bg) text-(--color-text)">
         {user && <NavBar userName={userName} showAdmin={showAdmin} />}
         {children}
       </body>

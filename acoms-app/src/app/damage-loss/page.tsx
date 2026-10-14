@@ -20,19 +20,19 @@ export default async function DamageLossPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-1 text-xl font-semibold text-slate-900">Damage &amp; Loss</h1>
-      <p className="mb-6 text-sm text-slate-500">
+      <h1 className="mb-1 text-xl font-semibold text-(--color-text)">Damage &amp; Loss</h1>
+      <p className="mb-6 text-sm text-(--color-text-subtle)">
         Standalone reports — equipment damaged or lost outside a transfer.
       </p>
 
       <ReportForm />
 
       <section className="mt-10">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Damage Reports</h2>
+        <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Damage Reports</h2>
         {damageReports.data && damageReports.data.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-slate-200">
+          <div className="overflow-hidden rounded-lg border border-(--color-border)">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium uppercase tracking-wide text-(--color-text-subtle)">
                 <tr>
                   <th className="px-4 py-2">Equipment</th>
                   <th className="px-4 py-2">Station</th>
@@ -41,35 +41,35 @@ export default async function DamageLossPage() {
                   <th className="px-4 py-2">Reported</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-(--color-border)">
                 {(damageReports.data as any[]).map((d) => (
-                  <tr key={d.id} className="hover:bg-slate-50">
+                  <tr key={d.id} className="hover:bg-(--color-surface-hover)">
                     <td className="px-4 py-2">
-                      <Link href={`/damage-loss/${d.id}?type=damage`} className="font-medium text-slate-900 hover:underline">
+                      <Link href={`/damage-loss/${d.id}?type=damage`} className="font-medium text-(--color-text) hover:underline">
                         {d.equipment_type?.source_code}
                       </Link>
-                      <div className="text-xs text-slate-500">{d.equipment_type?.name}</div>
+                      <div className="text-xs text-(--color-text-subtle)">{d.equipment_type?.name}</div>
                     </td>
-                    <td className="px-4 py-2 text-slate-600">{d.station?.code}</td>
-                    <td className="px-4 py-2 text-slate-600">{d.quantity}</td>
-                    <td className="px-4 py-2 text-slate-600">{d.status.replace(/_/g, " ")}</td>
-                    <td className="px-4 py-2 text-slate-500">{new Date(d.reported_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-2 text-(--color-text-muted)">{d.station?.code}</td>
+                    <td className="px-4 py-2 text-(--color-text-muted)">{d.quantity}</td>
+                    <td className="px-4 py-2 text-(--color-text-muted)">{d.status.replace(/_/g, " ")}</td>
+                    <td className="px-4 py-2 text-(--color-text-subtle)">{new Date(d.reported_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">No damage reports yet.</p>
+          <p className="text-sm text-(--color-text-subtle)">No damage reports yet.</p>
         )}
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Loss Reports</h2>
+        <h2 className="mb-3 text-sm font-semibold text-(--color-text-muted)">Loss Reports</h2>
         {lossReports.data && lossReports.data.length > 0 ? (
-          <div className="overflow-hidden rounded-lg border border-slate-200">
+          <div className="overflow-hidden rounded-lg border border-(--color-border)">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+              <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium uppercase tracking-wide text-(--color-text-subtle)">
                 <tr>
                   <th className="px-4 py-2">Equipment</th>
                   <th className="px-4 py-2">Station</th>
@@ -78,26 +78,26 @@ export default async function DamageLossPage() {
                   <th className="px-4 py-2">Reported</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-(--color-border)">
                 {(lossReports.data as any[]).map((l) => (
-                  <tr key={l.id} className="hover:bg-slate-50">
+                  <tr key={l.id} className="hover:bg-(--color-surface-hover)">
                     <td className="px-4 py-2">
-                      <Link href={`/damage-loss/${l.id}?type=loss`} className="font-medium text-slate-900 hover:underline">
+                      <Link href={`/damage-loss/${l.id}?type=loss`} className="font-medium text-(--color-text) hover:underline">
                         {l.equipment_type?.source_code}
                       </Link>
-                      <div className="text-xs text-slate-500">{l.equipment_type?.name}</div>
+                      <div className="text-xs text-(--color-text-subtle)">{l.equipment_type?.name}</div>
                     </td>
-                    <td className="px-4 py-2 text-slate-600">{l.station?.code}</td>
-                    <td className="px-4 py-2 text-slate-600">{l.quantity}</td>
-                    <td className="px-4 py-2 text-slate-600">{l.status.replace(/_/g, " ")}</td>
-                    <td className="px-4 py-2 text-slate-500">{new Date(l.reported_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-2 text-(--color-text-muted)">{l.station?.code}</td>
+                    <td className="px-4 py-2 text-(--color-text-muted)">{l.quantity}</td>
+                    <td className="px-4 py-2 text-(--color-text-muted)">{l.status.replace(/_/g, " ")}</td>
+                    <td className="px-4 py-2 text-(--color-text-subtle)">{new Date(l.reported_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">No loss reports yet.</p>
+          <p className="text-sm text-(--color-text-subtle)">No loss reports yet.</p>
         )}
       </section>
     </div>

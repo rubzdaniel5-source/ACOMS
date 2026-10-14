@@ -29,7 +29,7 @@ export default async function TransfersPage() {
       </div>
 
       {error && (
-        <div className="panel px-4 py-3 text-sm text-(--brick)" style={{ borderColor: "#E2BEBE" }}>
+        <div className="panel px-4 py-3 text-sm text-(--brick)" style={{ borderColor: "var(--color-danger)" }}>
           {error.message}
         </div>
       )}

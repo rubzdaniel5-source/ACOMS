@@ -31,7 +31,7 @@ export default async function TransferDetailPage({
   if (error || !transfer) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-8">
-        <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-md bg-(--color-danger-soft) px-4 py-3 text-sm text-(--color-danger)">
           {error?.message ?? "Transfer not found."}
         </p>
       </div>
@@ -45,8 +45,8 @@ export default async function TransferDetailPage({
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">{t.transfer_number}</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-semibold text-(--color-text)">{t.transfer_number}</h1>
+          <p className="text-sm text-(--color-text-subtle)">
             {t.from_station?.code} ({t.from_station?.name}) &rarr; {t.to_station?.code} ({t.to_station?.name})
           </p>
         </div>
@@ -54,15 +54,15 @@ export default async function TransferDetailPage({
       </div>
 
       {t.reason && (
-        <div className="mb-4 rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-700">
+        <div className="mb-4 rounded-md bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
           <span className="font-medium">Reason: </span>
           {t.reason}
         </div>
       )}
 
-      <div className="mb-6 overflow-hidden rounded-lg border border-slate-200">
+      <div className="mb-6 overflow-hidden rounded-lg border border-(--color-border)">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+          <thead className="bg-(--color-surface-subtle) text-left text-xs font-medium uppercase tracking-wide text-(--color-text-subtle)">
             <tr>
               <th className="px-4 py-2">Equipment</th>
               <th className="px-4 py-2">Requested</th>
@@ -73,12 +73,12 @@ export default async function TransferDetailPage({
               <th className="px-4 py-2">Missing</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-(--color-border)">
             {transferItems.map((item) => (
               <tr key={item.id}>
                 <td className="px-4 py-2">
-                  <div className="font-medium text-slate-900">{item.equipment_type?.source_code}</div>
-                  <div className="text-xs text-slate-500">{item.equipment_type?.name}</div>
+                  <div className="font-medium text-(--color-text)">{item.equipment_type?.source_code}</div>
+                  <div className="text-xs text-(--color-text-subtle)">{item.equipment_type?.name}</div>
                 </td>
                 <td className="px-4 py-2">{item.quantity_requested}</td>
                 <td className="px-4 py-2">{item.quantity_approved ?? "—"}</td>

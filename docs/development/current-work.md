@@ -30,3 +30,6 @@ Establish the complete basic movement path:
 - [ ] Automated tests
 
 Only mark work complete after implementation, testing, review and documentation.
+
+## UI/UX implementation (ACOMS-DESIGN-001)
+Stage 1 done: tokens + Light/Dark/System, two-level header, dashboard 3x2 / 2x3, Action Required restyle, legacy slate/red utilities migrated to tokens, distinct-station count fix. Remaining: sub-KPI links to filtered lists (needs the card restructured so links are not nested), Station Inventory table review on the dashboard, loading/skeleton and stale-data states, per-route visual review in both themes, account-synced theme preference.

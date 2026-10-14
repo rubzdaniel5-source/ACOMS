@@ -15,7 +15,7 @@ export function AdminSubNav({ sections }: { sections: { href: string; label: str
             key={s.href}
             href={s.href}
             className={`rounded-sm px-3 py-2 text-sm font-medium ${
-              active ? "bg-(--navy) text-white" : "text-(--steel) hover:bg-(--steel-light)"
+              active ? "bg-(--navy) text-(--color-on-action)" : "text-(--steel) hover:bg-(--steel-light)"
             }`}
           >
             {s.label}

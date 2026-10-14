@@ -91,17 +91,17 @@ export default function NewTransferPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="mb-6 text-xl font-semibold text-slate-900">New Transfer Request</h1>
+      <h1 className="mb-6 text-xl font-semibold text-(--color-text)">New Transfer Request</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">From Station</label>
+            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">From Station</label>
             <select
               required
               value={fromStationId}
               onChange={(e) => setFromStationId(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
             >
               <option value="">Select...</option>
               {stations.map((s) => (
@@ -111,18 +111,18 @@ export default function NewTransferPage() {
               ))}
             </select>
             {fromStation?.station_type === "NO_STOCK_TURNAROUND" && (
-              <p className="mt-1 text-xs text-amber-600">
+              <p className="mt-1 text-xs text-(--color-warning)">
                 Warning: this is a no-stock turnaround station and likely holds no equipment to transfer out.
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">To Station</label>
+            <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">To Station</label>
             <select
               required
               value={toStationId}
               onChange={(e) => setToStationId(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
             >
               <option value="">Select...</option>
               {stations.map((s) => (
@@ -135,11 +135,11 @@ export default function NewTransferPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Priority</label>
+          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Priority</label>
           <select
             value={priority}
             onChange={(e) => setPriority(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
           >
             <option value="LOW">Low</option>
             <option value="NORMAL">Normal</option>
@@ -149,23 +149,23 @@ export default function NewTransferPage() {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Reason</label>
+          <label className="mb-1 block text-sm font-medium text-(--color-text-muted)">Reason</label>
           <textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={2}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
             placeholder="e.g. ABJ running low on main course casseroles"
           />
         </div>
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <label className="text-sm font-medium text-slate-700">Equipment</label>
+            <label className="text-sm font-medium text-(--color-text-muted)">Equipment</label>
             <button
               type="button"
               onClick={addItem}
-              className="text-sm font-medium text-slate-600 hover:text-slate-900"
+              className="text-sm font-medium text-(--color-text-muted) hover:text-(--color-text)"
             >
               + Add line
             </button>
@@ -177,7 +177,7 @@ export default function NewTransferPage() {
                   required
                   value={item.equipment_type_id}
                   onChange={(e) => updateItem(index, { equipment_type_id: e.target.value })}
-                  className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="flex-1 rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
                 >
                   <option value="">Select equipment...</option>
                   {equipmentTypes.map((et) => (
@@ -192,13 +192,13 @@ export default function NewTransferPage() {
                   required
                   value={item.quantity}
                   onChange={(e) => updateItem(index, { quantity: parseInt(e.target.value, 10) || 0 })}
-                  className="w-24 rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="w-24 rounded-md border border-(--color-border-strong) px-3 py-2 text-sm"
                 />
                 {items.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="px-2 text-slate-400 hover:text-red-600"
+                    className="px-2 text-(--color-text-subtle) hover:text-(--color-danger)"
                   >
                     &times;
                   </button>
@@ -208,13 +208,13 @@ export default function NewTransferPage() {
           </div>
         </div>
 
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-md bg-(--color-danger-soft) px-3 py-2 text-sm text-(--color-danger)">{error}</p>}
 
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="rounded-md bg-(--color-action) px-4 py-2 text-sm font-medium text-(--color-on-action) hover:bg-(--color-action-hover) disabled:opacity-50"
           >
             {submitting ? "Submitting..." : "Submit Request"}
           </button>
