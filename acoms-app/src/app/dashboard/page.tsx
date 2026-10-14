@@ -30,6 +30,15 @@ export default async function DashboardPage() {
     return acc;
   }, {});
 
+  // A missing result means the query failed, not that the count is zero (ACOMS-DESIGN-001 s21).
+  const val = (row: any, key: string): number | string => (row ? (row[key] ?? 0) : "—");
+  const failed = [overview, inventory, movement, lossDamage, reconciliation, exceptions].some((r) => r.error);
+  const updatedAt = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Kampala",
+  }).format(new Date());
+
+  const hc = (k: string): number | string => (inventory.error ? "—" : healthCounts[k] ?? 0);
+
   const o = overview.data as any;
   const m = movement.data as any;
   const ld = lossDamage.data as any;
@@ -39,20 +48,27 @@ export default async function DashboardPage() {
     <div className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-(--color-text)">Equipment Control Dashboard</h1>
-        <p className="text-sm text-(--color-text-muted)">Operational control centre — what needs your attention, and where.</p>
+        <p className="text-sm text-(--color-text-muted)">Operational control centre: what needs your attention, and where.</p>
+        <p className="mt-1 text-xs text-(--color-text-subtle)">Data loaded {updatedAt} EAT. Refresh the page for the latest figures.</p>
       </div>
+
+      {failed && (
+        <div className="alert alert-warning mb-4" role="alert">
+          Some figures could not be loaded and show a dash instead of a count. Refresh the page to try again.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         <ControlCard
           title="Equipment Overview"
           icon="boxes"
           href="/dashboard/equipment-overview"
-          headline={{ value: o?.grand_total ?? 0, label: "Total Equipment" }}
+          headline={{ value: val(o, "grand_total"), label: "Total Equipment" }}
           stats={[
-            { label: "Available", value: o?.total_available ?? 0 },
-            { label: "In Transit", value: o?.total_in_transit ?? 0, tone: o?.total_in_transit > 0 ? "amber" : "default" },
-            { label: "Damaged", value: o?.total_damaged ?? 0, tone: o?.total_damaged > 0 ? "amber" : "default" },
-            { label: "Missing", value: o?.total_missing ?? 0, tone: o?.total_missing > 0 ? "brick" : "default" },
+            { label: "Available", value: val(o, "total_available"), href: "/dashboard/equipment-overview?bucket=available" },
+            { label: "In Transit", value: val(o, "total_in_transit"), tone: o?.total_in_transit > 0 ? "amber" : "default", href: "/dashboard/equipment-overview?bucket=in_transit" },
+            { label: "Damaged", value: val(o, "total_damaged"), tone: o?.total_damaged > 0 ? "amber" : "default", href: "/dashboard/equipment-overview?bucket=damaged" },
+            { label: "Missing", value: val(o, "total_missing"), tone: o?.total_missing > 0 ? "brick" : "default", href: "/dashboard/equipment-overview?bucket=missing" },
           ]}
         />
 
@@ -61,15 +77,15 @@ export default async function DashboardPage() {
           icon="gauge"
           href="/dashboard/inventory-health"
           headline={
-            (healthCounts["CRITICAL_SHORTAGE"] ?? 0) > 0
-              ? { value: healthCounts["CRITICAL_SHORTAGE"], label: "Critical Shortages", href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE" }
-              : { value: healthCounts["NORMAL"] ?? 0, label: "Items at Normal Stock" }
+            Number(hc("CRITICAL_SHORTAGE")) > 0
+              ? { value: hc("CRITICAL_SHORTAGE"), label: "Critical Shortages", href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE" }
+              : { value: hc("NORMAL"), label: "Items at Normal Stock" }
           }
           stats={[
-            { label: "Shortages", value: healthCounts["SHORTAGE"] ?? 0, tone: "amber", href: "/dashboard/station-inventory?status=SHORTAGE" },
-            { label: "Normal", value: healthCounts["NORMAL"] ?? 0, tone: "teal", href: "/dashboard/station-inventory?status=NORMAL" },
-            { label: "Surplus", value: healthCounts["SURPLUS"] ?? 0, href: "/dashboard/station-inventory?status=SURPLUS" },
-            { label: "Critical Surplus", value: healthCounts["CRITICAL_SURPLUS"] ?? 0, tone: "brick", href: "/dashboard/station-inventory?status=CRITICAL_SURPLUS" },
+            { label: "Shortages", value: hc("SHORTAGE"), tone: "amber", href: "/dashboard/station-inventory?status=SHORTAGE" },
+            { label: "Normal", value: hc("NORMAL"), tone: "teal", href: "/dashboard/station-inventory?status=NORMAL" },
+            { label: "Surplus", value: hc("SURPLUS"), href: "/dashboard/station-inventory?status=SURPLUS" },
+            { label: "Critical Surplus", value: hc("CRITICAL_SURPLUS"), tone: "brick", href: "/dashboard/station-inventory?status=CRITICAL_SURPLUS" },
           ]}
         />
 
@@ -77,12 +93,12 @@ export default async function DashboardPage() {
           title="Equipment Movement & Exchange"
           icon="swap"
           href="/dashboard/movement"
-          headline={{ value: m?.total_requiring_action ?? 0, label: "Transfers Requiring Action", href: "/transfers?status=open" }}
+          headline={{ value: val(m, "total_requiring_action"), label: "Transfers Requiring Action", href: "/transfers?status=open" }}
           stats={[
-            { label: "Awaiting Approval", value: m?.awaiting_approval ?? 0, tone: "amber", href: "/transfers?status=REQUESTED" },
-            { label: "Awaiting Dispatch", value: m?.awaiting_dispatch ?? 0, href: "/transfers?status=APPROVED" },
-            { label: "In Transit", value: m?.in_transit ?? 0, href: "/transfers?status=IN_TRANSIT" },
-            { label: "Disputed", value: m?.disputed ?? 0, tone: "brick", href: "/transfers?status=DISCREPANCY" },
+            { label: "Awaiting Approval", value: val(m, "awaiting_approval"), tone: "amber", href: "/transfers?status=REQUESTED" },
+            { label: "Awaiting Dispatch", value: val(m, "awaiting_dispatch"), href: "/transfers?status=APPROVED" },
+            { label: "In Transit", value: val(m, "in_transit"), href: "/transfers?status=IN_TRANSIT" },
+            { label: "Disputed", value: val(m, "disputed"), tone: "brick", href: "/transfers?status=DISCREPANCY" },
           ]}
         />
 
@@ -90,12 +106,12 @@ export default async function DashboardPage() {
           title="Loss & Damage Control"
           icon="alert"
           href="/dashboard/loss-damage"
-          headline={{ value: ld?.open_exceptions_total ?? 0, label: "Open Exceptions" }}
+          headline={{ value: val(ld, "open_exceptions_total"), label: "Open Exceptions" }}
           stats={[
-            { label: "Missing Equipment", value: ld?.missing_open_count ?? 0, tone: "brick", href: "/damage-loss?view=missing" },
-            { label: "Damaged Equipment", value: ld?.damaged_open_count ?? 0, tone: "amber", href: "/damage-loss?view=damaged" },
-            { label: "Under Investigation", value: ld?.under_investigation ?? 0, href: "/damage-loss?view=investigation" },
-            { label: "Confirmed Losses", value: ld?.confirmed_losses ?? 0, href: "/damage-loss?view=confirmed" },
+            { label: "Missing Equipment", value: val(ld, "missing_open_count"), tone: "brick", href: "/damage-loss?view=missing" },
+            { label: "Damaged Equipment", value: val(ld, "damaged_open_count"), tone: "amber", href: "/damage-loss?view=damaged" },
+            { label: "Under Investigation", value: val(ld, "under_investigation"), href: "/damage-loss?view=investigation" },
+            { label: "Confirmed Losses", value: val(ld, "confirmed_losses"), href: "/damage-loss?view=confirmed" },
           ]}
         />
 
@@ -103,11 +119,11 @@ export default async function DashboardPage() {
           title="Reconciliation Control"
           icon="check"
           href="/dashboard/reconciliation"
-          headline={{ value: rc?.awaiting_reconciliation ?? 0, label: "Awaiting Reconciliation", href: "/transfers?status=RECEIVED" }}
+          headline={{ value: val(rc, "awaiting_reconciliation"), label: "Awaiting Reconciliation", href: "/transfers?status=RECEIVED" }}
           stats={[
-            { label: "Reconciled (Pending Close)", value: rc?.reconciled_pending_close ?? 0, href: "/transfers?status=RECONCILIATION" },
-            { label: "Discrepancies", value: rc?.discrepancies ?? 0, tone: "brick", href: "/transfers?status=DISCREPANCY" },
-            { label: "Closed (Total)", value: rc?.closed_total ?? 0, tone: "teal", href: "/transfers?status=CLOSED" },
+            { label: "Reconciled (Pending Close)", value: val(rc, "reconciled_pending_close"), href: "/transfers?status=RECONCILIATION" },
+            { label: "Discrepancies", value: val(rc, "discrepancies"), tone: "brick", href: "/transfers?status=DISCREPANCY" },
+            { label: "Closed (Total)", value: val(rc, "closed_total"), tone: "teal", href: "/transfers?status=CLOSED" },
           ]}
         />
 
@@ -116,11 +132,11 @@ export default async function DashboardPage() {
           icon="building"
           href="/dashboard/station-inventory"
           headline={{
-            value: new Set((criticalStock.data ?? []).map((r: any) => r.station_id)).size,
+            value: inventory.error ? "—" : new Set(criticalStock.data.map((r) => r.station_id)).size,
             label: "Stations Requiring Attention",
             href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE,CRITICAL_SURPLUS",
           }}
-          stats={[{ label: "Critical items", value: criticalStock.data.length, tone: "brick", href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE,CRITICAL_SURPLUS" }]}
+          stats={[{ label: "Critical items", value: inventory.error ? "—" : criticalStock.data.length, tone: "brick", href: "/dashboard/station-inventory?status=CRITICAL_SHORTAGE,CRITICAL_SURPLUS" }]}
         />
       </div>
 
