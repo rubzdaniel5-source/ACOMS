@@ -65,6 +65,18 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     anyOf: ["manage_configuration"],
   },
   {
+    href: "/admin/audit",
+    label: "Audit Log",
+    description: "Who did what, where and when. Tamper-proof, filterable, exportable.",
+    anyOf: ["manage_configuration"],
+  },
+  {
+    href: "/admin/integrity",
+    label: "Integrity Check",
+    description: "Verify every stock figure against the ledger and reports behind it.",
+    anyOf: ["manage_configuration"],
+  },
+  {
     href: "/admin/ledger",
     label: "Inventory Ledger",
     description: "Every stock movement ever recorded, with who did it and why.",
