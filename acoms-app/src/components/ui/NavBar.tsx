@@ -44,15 +44,18 @@ export function NavBar({ userName, showAdmin }: { userName?: string | null; show
         </div>
       </div>
       <nav aria-label="Primary" className="border-t border-(--color-header-border) bg-(--color-surface)">
-        <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-3 sm:justify-center sm:px-6">
-          {links.map((link) => {
+        {/* Phones: first three tabs on the top row, the rest share the second row. From sm up: one centred row. */}
+        <ul className="mx-auto grid max-w-7xl grid-cols-6 gap-x-1 px-3 sm:flex sm:justify-center sm:overflow-x-auto sm:px-6">
+          {links.map((link, i) => {
+            const second = links.length - 3;
+            const span = i < 3 ? "col-span-2" : second === 1 ? "col-span-6" : second === 2 ? "col-span-3" : "col-span-2";
             const active = pathname === link.href || pathname.startsWith(link.href + "/");
             return (
-              <li key={link.href} className="shrink-0">
+              <li key={link.href} className={`${span} sm:shrink-0`}>
                 <Link
                   href={link.href}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-12 items-center border-b-2 px-5 text-base ${
+                  className={`flex min-h-12 w-full items-center justify-center border-b-2 px-1 text-center text-[0.95rem] leading-tight sm:inline-flex sm:w-auto sm:px-5 sm:text-base ${
                     active
                       ? "border-(--color-primary) bg-(--color-primary-soft) font-semibold text-(--color-on-primary-soft)"
                       : "border-transparent font-medium text-(--color-text-muted) hover:text-(--color-text)"
