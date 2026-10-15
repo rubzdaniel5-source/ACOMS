@@ -1,9 +1,9 @@
 # ACOMS Development Roadmap
 
-## Phase 0 — Foundation
+## Phase 0 — Foundation (done)
 Repository, Supabase, authentication, authorization, stations/locations, audit foundation, migrations, app shell.
 
-## Phase 1 — Equipment Control MVP
+## Phase 1 — Equipment Control MVP (built; awaiting operational sign-off and real data)
 1. Catalogue + station inventory
 2. Ledger
 3. Transfer request
@@ -16,7 +16,7 @@ Repository, Supabase, authentication, authorization, stations/locations, audit f
 10. Alerts/basic reports
 
 ## Phase 2 — Operational Expansion
-Richer movement, QR/barcode, stronger station workflows, reporting, flight linkage.
+Richer movement, stronger station workflows, reporting, flight linkage, notifications (email/SMS), optional offline drafts. Individual trolley tracking and QR/barcode are parked (ADR-015) until operations asks.
 
 ## Phase 3 — Meal and Flight Catering
 Flights, meals, menus, orders, production, dispatch, loading, special meals.

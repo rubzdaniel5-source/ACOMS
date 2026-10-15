@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveStation, setStationActive } from "./actions";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Station = { id: string; code: string; name: string; station_type: string; airport_code: string | null; country: string | null; timezone: string | null; is_active: boolean };
 type Form = { id: string | null; code: string; name: string; stationType: string; airportCode: string; country: string; timezone: string };
@@ -16,6 +17,7 @@ export function StationManager({ stations, canEdit }: { stations: Station[]; can
   const [form, setForm] = useState<Form | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [deactivating, setDeactivating] = useState<Station | null>(null);
 
   function save(e: React.FormEvent) {
     e.preventDefault();
@@ -29,12 +31,10 @@ export function StationManager({ stations, canEdit }: { stations: Station[]; can
     });
   }
 
-  function toggle(s: Station) {
+  function toggle(s: Station, reason: string) {
     setError(null);
-    const reason = s.is_active ? prompt(`Reason for deactivating ${s.code}?`) : "";
-    if (s.is_active && !reason) return;
     startTransition(async () => {
-      const r = await setStationActive(s.id, !s.is_active, reason ?? "");
+      const r = await setStationActive(s.id, !s.is_active, reason);
       if (!r.ok) return setError(r.error);
       router.refresh();
     });
@@ -88,7 +88,7 @@ export function StationManager({ stations, canEdit }: { stations: Station[]; can
                   {canEdit && (
                     <>
                       <button className="mr-3 text-(--navy) hover:underline" onClick={() => setForm({ id: s.id, code: s.code, name: s.name, stationType: s.station_type, airportCode: s.airport_code ?? "", country: s.country ?? "", timezone: s.timezone ?? "" })}>Edit</button>
-                      {s.station_type !== "HUB" && <button className="text-(--steel) hover:underline" disabled={pending} onClick={() => toggle(s)}>{s.is_active ? "Deactivate" : "Reactivate"}</button>}
+                      {s.station_type !== "HUB" && <button className="text-(--steel) hover:underline" disabled={pending} onClick={() => (s.is_active ? setDeactivating(s) : toggle(s, ""))}>{s.is_active ? "Deactivate" : "Reactivate"}</button>}
                     </>
                   )}
                 </td>
@@ -97,6 +97,18 @@ export function StationManager({ stations, canEdit }: { stations: Station[]; can
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={deactivating !== null}
+        danger
+        pending={pending}
+        title={`Deactivate ${deactivating?.code ?? ""}?`}
+        description="A station that still holds stock or has open transfers cannot be deactivated. Its history is kept."
+        reasonLabel="Reason for deactivating"
+        confirmLabel="Deactivate station"
+        onCancel={() => setDeactivating(null)}
+        onConfirm={(reason) => { const st = deactivating; setDeactivating(null); if (st) toggle(st, reason); }}
+      />
     </div>
   );
 }

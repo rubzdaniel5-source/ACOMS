@@ -8,26 +8,22 @@ Establish the complete basic movement path:
 
 **Inventory → Transfer → Approval → Dispatch → In Transit → Receive → Reconcile**
 
-## Status
-- [x] Vision
-- [x] Platform architecture
-- [x] Initial equipment catalogue
-- [x] Workbook analysis
-- [x] Claude engineering protocol
-- [ ] Repository foundation
-- [ ] Database schema
-- [ ] Authentication
-- [ ] Authorization/RLS
-- [ ] Catalogue UI/API
-- [ ] Inventory ledger
-- [ ] Transfer workflow
-- [ ] Receiving
-- [ ] Reconciliation
-- [ ] Dashboard
-- [ ] Damage/loss
-- [ ] Alerts
-- [ ] Basic reports
-- [ ] Automated tests
+## Status (15 Oct 2026)
+Equipment Control v0.1 is built end to end and in use on the live deployment.
+- [x] Vision, platform architecture, catalogue, workbook analysis, engineering protocol
+- [x] Repository foundation, database schema (27 migrations), authentication, authorization/RLS
+- [x] Catalogue and station admin (UI and API)
+- [x] Inventory ledger (append-only, balances derived and checked)
+- [x] Transfer workflow: request, approval, dispatch, receive, reconcile, close, discrepancy resolution
+- [x] Damage and loss workflows, with retire restricted to manager or supervisor
+- [x] Stock adjustments with two-person approval; opening balances
+- [x] Dashboard, Action Required alerts, reports, CSV export
+- [x] Admin: users, roles and permissions, settings, audit log, integrity checks
+- [x] Design system (light/dark, account-synced) and phone install with offline screen
+- [x] Automated tests: 183 database checks, 17 app tests, CI on every push
+- [x] Trolleys counted in batches (ADR-015)
+
+Still to do: operations sign-off on provisional thresholds and tolerances, real opening stock and some placeholder equipment codes, a visual review at every screen width, a reorder level for half-size trolleys (R053), and the later phases in the roadmap. No email or SMS notifications yet.
 
 Only mark work complete after implementation, testing, review and documentation.
 
@@ -40,7 +36,7 @@ Stage 3 done: Equipment Overview counts open `?bucket=` views; loading skeletons
 
 Stage 4 done: screenshot review fixes (dark-mode row dividers were near-white because Tailwind borders default to currentColor; now every border uses the theme border; table headings no longer all-caps) and the older screens (transfers list, new transfer, transfer detail and action panel, damage/loss list, report form, detail and panel) moved to shared button/input/alert/panel styles with consistent page widths, 44px targets and labelled fields. Still open: themed confirmation dialogs for dispatch/reconcile/close (reject still uses window.prompt), Reports page layout pass, account-synced theme.
 
-Stage 5 done: themed ConfirmDialog (reject with required reason, dispatch, reconcile, close), Reports page layout pass, account-synced theme (migration 024), larger table headings, section headings and primary tabs. Remaining: admin deactivate/remove prompts still use browser dialogs; full multi-width visual review.
+Stage 5 done: themed ConfirmDialog (reject with required reason, dispatch, reconcile, close), Reports page layout pass, account-synced theme (migration 024), larger table headings, section headings and primary tabs. Remaining at the time: admin deactivate/remove prompts (done in Stage 8); full multi-width visual review.
 
 Stage 6 done: Action Required now includes overdue transfers and adjustments awaiting approval, shows station, quantities and next action, is de-duplicated and sorted (ADR-013), has a full list page, and refuses to show a calm empty state when a source query failed.
 
@@ -64,3 +60,6 @@ Installable app (`manifest.ts`, icons in `public/icons`), service worker `public
 ## Trolleys in batches (ADR-015, migration 027)
 
 R052 and R053 switched from INDIVIDUAL to BATCH. New permission `retire_equipment`. Damage and loss workflow steps now enforce station scope (previously only the permission was checked). 6 test files, 183 database checks.
+
+## Stage 8
+Admin remove-role, deactivate-user and deactivate-station now use the themed confirmation dialog (station deactivation asks for a reason in the dialog). No browser confirm/prompt dialogs remain.

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { assignRole, removeRole, resetPassword, setUserActive, updateProfile } from "../actions";
 import { generateTempPassword } from "../passwords";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 type Role = { id: string; name: string };
 type Station = { id: string; code: string; name: string };
@@ -25,6 +26,7 @@ export function UserDetailPanel({ user, isSelf, roles, stations }: { user: User;
   const [stationId, setStationId] = useState("");
   const [tempPw, setTempPw] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [ask, setAsk] = useState<null | { kind: "role"; id: string; name: string } | { kind: "deactivate" }>(null);
 
   function run(fn: () => Promise<{ ok: boolean; error?: string }>, okText: string, after?: () => void) {
     setMsg(null);
@@ -77,7 +79,7 @@ export function UserDetailPanel({ user, isSelf, roles, stations }: { user: User;
               <span>{r.role_name} <span className="text-(--steel)">· {r.station_code ?? "Network-wide"}</span></span>
               {!isSelf && (
                 <button className="text-(--brick) hover:underline" disabled={pending}
-                  onClick={() => confirm(`Remove ${r.role_name}?`) && run(() => removeRole(user.id, r.user_role_id), "Role removed")}>Remove</button>
+                  onClick={() => setAsk({ kind: "role", id: r.user_role_id, name: r.role_name })}>Remove</button>
               )}
             </div>
           ))}
@@ -122,7 +124,7 @@ export function UserDetailPanel({ user, isSelf, roles, stations }: { user: User;
             <div className="flex flex-wrap gap-3">
               <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (required, e.g. left the company)" className={`${input} min-w-64 flex-1`} />
               <button className="rounded-sm border border-(--brick) px-4 py-2 text-sm text-(--brick) hover:bg-(--brick-surface)" disabled={pending || !reason.trim()}
-                onClick={() => confirm("Deactivate this user? They lose all access immediately.") && run(() => setUserActive(user.id, false, reason), "User deactivated", () => setReason(""))}>Deactivate</button>
+                onClick={() => setAsk({ kind: "deactivate" })}>Deactivate</button>
             </div>
           ) : (
             <button className="btn-primary px-4 py-2 text-sm" disabled={pending}
@@ -130,6 +132,24 @@ export function UserDetailPanel({ user, isSelf, roles, stations }: { user: User;
           )}
         </section>
       )}
+
+      <ConfirmDialog
+        open={ask !== null}
+        danger
+        pending={pending}
+        title={ask?.kind === "role" ? `Remove ${ask.name}?` : "Deactivate this user?"}
+        description={ask?.kind === "role"
+          ? `${user.full_name} loses the permissions this role gives, straight away.`
+          : `${user.full_name} loses all access immediately. Reason: ${reason.trim()}`}
+        confirmLabel={ask?.kind === "role" ? "Remove role" : "Deactivate user"}
+        onCancel={() => setAsk(null)}
+        onConfirm={() => {
+          const a = ask;
+          setAsk(null);
+          if (a?.kind === "role") run(() => removeRole(user.id, a.id), "Role removed");
+          else if (a?.kind === "deactivate") run(() => setUserActive(user.id, false, reason), "User deactivated", () => setReason(""));
+        }}
+      />
     </div>
   );
 }
