@@ -27,6 +27,14 @@ export async function setEquipmentActive(id: string, active: boolean, reason: st
   return { ok: true };
 }
 
+export async function setShortageAlert(id: string, value: boolean): Promise<Result> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_equipment_shortage_alert", { p_id: id, p_value: value });
+  if (error) return { ok: false, error: error.message };
+  refresh(id);
+  return { ok: true };
+}
+
 export async function addAlias(id: string, alias: string): Promise<Result> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("add_equipment_alias", { p_equipment_id: id, p_alias: alias });

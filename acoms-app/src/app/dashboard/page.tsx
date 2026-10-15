@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     fetchAll<any>((from, to) =>
       supabase
         .from("v_inventory_health")
-        .select("station_id, station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status")
+        .select("station_id, station_code, station_name, source_code, equipment_name, current_stock, minimum_level, variance, status, alert_on_any_shortage")
         .order("station_code").order("source_code")
         .range(from, to)
     ),

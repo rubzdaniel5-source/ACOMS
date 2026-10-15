@@ -11,7 +11,7 @@ export default async function ActionRequiredPage() {
     fetchAll<any>((from, to) =>
       supabase
         .from("v_inventory_health")
-        .select("station_id, station_code, source_code, equipment_name, current_stock, minimum_level, status")
+        .select("station_id, station_code, source_code, equipment_name, current_stock, minimum_level, status, alert_on_any_shortage")
         .in("status", ["CRITICAL_SHORTAGE", "CRITICAL_SURPLUS"])
         .order("station_code").order("source_code")
         .range(from, to)

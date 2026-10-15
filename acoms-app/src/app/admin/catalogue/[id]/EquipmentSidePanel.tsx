@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { addAlias, removeAlias, setEquipmentActive } from "../actions";
+import { addAlias, removeAlias, setEquipmentActive, setShortageAlert } from "../actions";
 
-export function EquipmentSidePanel({ id, isActive, onHand, aliases }: { id: string; isActive: boolean; onHand: number; aliases: { id: string; alias: string }[] }) {
+export function EquipmentSidePanel({ id, isActive, onHand, alertAny, aliases }: { id: string; isActive: boolean; onHand: number; alertAny: boolean; aliases: { id: string; alias: string }[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [alias, setAlias] = useState("");
@@ -27,6 +27,14 @@ export function EquipmentSidePanel({ id, isActive, onHand, aliases }: { id: stri
       <section className="panel p-4">
         <div className="text-xs text-(--steel)">Units on the books</div>
         <div className="text-2xl font-semibold text-(--navy)">{onHand}</div>
+      </section>
+
+      <section className="panel space-y-2 p-4">
+        <h2 className="font-semibold text-(--navy)">Shortage alerts</h2>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" className="mt-1" checked={alertAny} disabled={pending} onChange={(e) => run(() => setShortageAlert(id, e.target.checked))} />
+          <span>Alert on any shortage<span className="block text-xs text-(--steel)">Raises an alert when a station is even one unit under its required level. Off: only critical shortages alert.</span></span>
+        </label>
       </section>
 
       <section className="panel space-y-2 p-4">

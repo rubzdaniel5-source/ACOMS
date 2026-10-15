@@ -63,3 +63,6 @@ R052 and R053 switched from INDIVIDUAL to BATCH. New permission `retire_equipmen
 
 ## Stage 8
 Admin remove-role, deactivate-user and deactivate-station now use the themed confirmation dialog (station deactivation asks for a reason in the dialog). No browser confirm/prompt dialogs remain.
+
+## Trolley shortage alerts (migration 028)
+Each station keeps its own required level per item (station stock levels). Items marked "alert on any shortage" (both trolley types; switchable per item in the catalogue side panel) raise a "Below required level" alert when a station is even one unit under. Other items still alert only on critical shortage. A station with no stock record for the item shows no data, not an alert.

@@ -3,7 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 // Action Required rules (ACOMS-DESIGN-001 s9). One alert per unresolved condition,
 // sorted by severity, then by kind (order below), then by urgency within the kind.
 //   critical : critical shortage, transfer discrepancy
-//   warning  : overdue transfer, open loss report, open damage report, critical surplus
+//   warning  : overdue transfer, open loss report, open damage report, critical surplus,
+//              any shortage of an item marked alert_on_any_shortage (trolleys)
 //   attention: stock adjustment waiting for your approval
 // Plain shortages are not alerts; they are on the Inventory Health card and station table.
 
@@ -32,6 +33,7 @@ interface InvRow {
   current_stock: number;
   minimum_level: number | null;
   status: string;
+  alert_on_any_shortage?: boolean | null;
 }
 
 const days = (hours: number) => {
@@ -65,6 +67,23 @@ export function buildAlerts(opts: {
   const out: Alert[] = [];
 
   for (const r of invRows) {
+    // Items marked "alert on any shortage" (trolleys) also alert when even one unit under the station's level.
+    if (r.status === "SHORTAGE" && r.alert_on_any_shortage) {
+      const need = r.minimum_level ?? 0;
+      out.push({
+        key: `stock-${r.station_id}-${r.source_code}`,
+        severity: "warning",
+        label: "Below required level",
+        station: r.station_code,
+        reference: r.source_code,
+        detail: `${r.equipment_name}: ${n(r.current_stock)} available, required ${n(need)}. ${n(need - r.current_stock)} short.`,
+        href: `/dashboard/station-inventory?station=${encodeURIComponent(r.station_code)}&q=${encodeURIComponent(r.source_code)}`,
+        actions: canTransfer ? [{ label: "Request transfer", href: "/transfers/new" }] : [],
+        kindOrder: 0.5,
+        urgency: need - r.current_stock,
+      });
+      continue;
+    }
     if (r.status !== "CRITICAL_SHORTAGE" && r.status !== "CRITICAL_SURPLUS") continue;
     const short = r.status === "CRITICAL_SHORTAGE";
     const min = r.minimum_level;

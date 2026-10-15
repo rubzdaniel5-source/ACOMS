@@ -36,7 +36,7 @@ export default async function EquipmentDetailPage({ params }: { params: Promise<
       )}
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <EquipmentForm categories={(cats.data ?? []) as any} initial={e} />
-        <EquipmentSidePanel id={id} isActive={e.is_active} onHand={onHand} aliases={(aliases.data ?? []) as any} />
+        <EquipmentSidePanel id={id} isActive={e.is_active} onHand={onHand} alertAny={Boolean(e.alert_on_any_shortage)} aliases={(aliases.data ?? []) as any} />
       </div>
     </div>
   );

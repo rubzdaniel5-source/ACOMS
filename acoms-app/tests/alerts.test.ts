@@ -98,3 +98,27 @@ test("failed or empty sources produce no alerts and no crash", () => {
   const empty = { overdue: { data: null }, adjustments: { data: null }, exceptions: { data: null }, stations: { data: null } } as unknown as Sources;
   assert.deepEqual(build({ sources: empty }), []);
 });
+
+test("an item marked alert-on-any-shortage alerts when only one unit under the station level", () => {
+  const trolley = inv({ source_code: "R052", equipment_name: "Atlas Trolleys FS", status: "SHORTAGE", current_stock: 9, minimum_level: 10, alert_on_any_shortage: true });
+  const a = build({ invRows: [trolley], perms: ["create_transfer"] });
+  assert.equal(a.length, 1);
+  assert.equal(a[0].label, "Below required level");
+  assert.match(a[0].detail, /9 available, required 10\. 1 short/);
+  assert.equal(a[0].severity, "warning");
+});
+
+test("an ordinary item with a plain shortage still does not alert", () => {
+  assert.equal(build({ invRows: [inv({ status: "SHORTAGE", alert_on_any_shortage: false })] }).length, 0);
+  assert.equal(build({ invRows: [inv({ status: "SHORTAGE" })] }).length, 0);
+});
+
+test("a trolley at its required level does not alert", () => {
+  assert.equal(build({ invRows: [inv({ status: "NORMAL", current_stock: 10, minimum_level: 10, alert_on_any_shortage: true })] }).length, 0);
+});
+
+test("a critical trolley shortage is still critical and appears once", () => {
+  const a = build({ invRows: [inv({ status: "CRITICAL_SHORTAGE", alert_on_any_shortage: true })] });
+  assert.equal(a.length, 1);
+  assert.equal(a[0].severity, "critical");
+});
