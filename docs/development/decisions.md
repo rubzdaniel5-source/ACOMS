@@ -36,3 +36,12 @@ Alerts are built in `features/dashboard/alerts.ts` from RLS-scoped views, one al
 - The service worker stores only the app's own static build files and a static offline screen. It never stores pages or data belonging to a signed-in user, so a shared or lost phone exposes nothing, and stock figures are never shown from memory.
 - Writes are never queued while offline. A banner says the screen may be out of date and changes cannot be saved. Reason: approvals, dispatches and counts depend on current stock; replaying them later could act on stale figures and break the requester ≠ approver and quantity rules.
 - Revisit queued offline writes only for a specific, low-risk action (for example saving a count as a draft) once operations asks for it.
+
+## ADR-015: Trolleys are counted in batches (supersedes ADR-009)
+
+- Atlas trolleys, full size (R052) and half size (R053), are counted by type like any other equipment, not one by one. Decided by the product owner on 15 Oct 2026. No individual trolley register and no QR codes for now.
+- Opening stock is entered per station as counts per type. Transfers, damage, loss and adjustments (two-person approval) work on counts exactly as for other items.
+- Life-cycle words map to what exists: in service = available, in transit, damaged, repair and retired = steps of the damage report, missing = loss report.
+- Retiring equipment needs the new `retire_equipment` permission (catering manager, catering supervisor, system administrator). Changeable in Roles & permissions.
+- Trolley tolerance stays 0: any count difference on a transfer is a discrepancy. Editable in the catalogue.
+- Revisit individual tracking only if operations later needs trolley-level history.

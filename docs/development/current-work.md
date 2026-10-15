@@ -60,3 +60,7 @@ Stage 7 done: migration 025 adds `transfers.reconciliation_overdue_days` (defaul
 ## Phone and offline use (ADR-014)
 
 Installable app (`manifest.ts`, icons in `public/icons`), service worker `public/sw.js` (static files only), static `public/offline.html`, and an offline/back-online banner (`PwaClient`). Tested in Chromium: with the server down, navigation shows the offline screen. Production build only; the worker is not registered in `next dev`.
+
+## Trolleys in batches (ADR-015, migration 027)
+
+R052 and R053 switched from INDIVIDUAL to BATCH. New permission `retire_equipment`. Damage and loss workflow steps now enforce station scope (previously only the permission was checked). 6 test files, 183 database checks.

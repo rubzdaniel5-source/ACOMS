@@ -58,10 +58,14 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
                   className="btn-primary min-h-11 px-5 text-sm">
                   Assess: Repairable
                 </button>
-                <button disabled={pending} onClick={() => run(() => assessDamageAction(report.id, "RETIRE", notes))}
-                  className="btn-secondary min-h-11 px-5 text-sm">
-                  Assess: Retire
-                </button>
+                {has("retire_equipment") ? (
+                  <button disabled={pending} onClick={() => run(() => assessDamageAction(report.id, "RETIRE", notes))}
+                    className="btn-secondary min-h-11 px-5 text-sm">
+                    Assess: Retire
+                  </button>
+                ) : (
+                  <p className="self-center text-xs text-(--color-text-muted)">Retiring equipment needs a manager or supervisor.</p>
+                )}
               </div>
             </div>
           )}
@@ -80,7 +84,7 @@ export function DamageLossActionPanel({ report, isLoss, permissions }: Props) {
             </button>
           )}
 
-          {report.status === "ASSESSED" && report.assessment_outcome === "RETIRE" && has("report_damage") && (
+          {report.status === "ASSESSED" && report.assessment_outcome === "RETIRE" && has("retire_equipment") && (
             <button disabled={pending} onClick={() => run(() => retireEquipmentAction(report.id))}
               className="btn-primary min-h-11 px-5 text-sm">
               Retire Equipment
