@@ -21,7 +21,7 @@ export default async function MovementPage() {
         <Link href="/transfers/new" className="btn-primary px-4 py-2 text-sm">+ New Equipment Transfer Request</Link>
       </div>
 
-      <div className="panel overflow-hidden">
+      <div className="panel overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
             <tr>

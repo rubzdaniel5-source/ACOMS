@@ -10,9 +10,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const sections = visibleSections(perms).map((s) => ({ href: s.href, label: s.label }));
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 gap-8 px-4 py-8">
-      <aside className="w-48 shrink-0">
-        <h2 className="mb-3 text-xs font-semibold text-(--steel)">Administration</h2>
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4 px-4 py-6 md:flex-row md:gap-8 md:py-8">
+      <aside className="min-w-0 md:w-48 md:shrink-0">
+        <h2 className="mb-2 text-xs font-semibold text-(--steel) md:mb-3">Administration</h2>
         <AdminSubNav sections={sections} />
       </aside>
       <div className="min-w-0 flex-1">{children}</div>

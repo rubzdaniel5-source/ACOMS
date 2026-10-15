@@ -24,7 +24,7 @@ export default async function LossDamagePage() {
 
       <section className="mb-8">
         <h2 className="mb-3 text-base font-semibold text-(--brick)">Missing Equipment ({loss.data?.length ?? 0})</h2>
-        <div className="panel overflow-hidden">
+        <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
               <tr><th className="px-3 py-2">Equipment</th><th className="px-3 py-2">Station</th><th className="px-3 py-2 text-right">Qty</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Action</th></tr>
@@ -47,7 +47,7 @@ export default async function LossDamagePage() {
 
       <section>
         <h2 className="mb-3 text-base font-semibold text-(--amber)">Damaged Equipment ({damage.data?.length ?? 0})</h2>
-        <div className="panel overflow-hidden">
+        <div className="panel overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
               <tr><th className="px-3 py-2">Equipment</th><th className="px-3 py-2">Station</th><th className="px-3 py-2 text-right">Qty</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">Action</th></tr>

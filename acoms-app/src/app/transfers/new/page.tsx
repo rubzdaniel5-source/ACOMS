@@ -159,7 +159,7 @@ export default function NewTransferPage() {
         </section>
 
         <section className="panel p-4 sm:p-5">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-(--color-text)">Equipment{req}</h2>
             <button type="button" onClick={addItem} className="btn-secondary min-h-11 px-4 text-sm">Add line</button>
           </div>

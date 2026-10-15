@@ -63,7 +63,7 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
       )}
 
       {transfers && transfers.length > 0 && (
-        <div className="panel overflow-hidden">
+        <div className="panel overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-(--steel-light) text-left text-sm font-medium text-(--steel)">
               <tr>

@@ -66,3 +66,6 @@ Admin remove-role, deactivate-user and deactivate-station now use the themed con
 
 ## Trolley shortage alerts (migration 028)
 Each station keeps its own required level per item (station stock levels). Items marked "alert on any shortage" (both trolley types; switchable per item in the catalogue side panel) raise a "Below required level" alert when a station is even one unit under. Other items still alert only on critical shortage. A station with no stock record for the item shows no data, not an alert.
+
+## Visual review (Stage 9)
+Reviewed the main screens at 360, 390, 768 and 1280 px in light and dark against a local copy of the app with demo data. Fixed: Admin menu squeezed its content on phones (now a scrolling strip above full-width content); Transfers list clipped its Status column on phones (now scrolls); the same clipping guard added to three dashboard detail tables; stock numbers in the Station Inventory table now use thousands separators like the alerts; spacing on the New transfer equipment heading. Wide tables on phones scroll sideways by design. Nothing else known; re-check after real data is loaded.

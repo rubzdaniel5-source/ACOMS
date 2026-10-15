@@ -195,10 +195,10 @@ export function StationInventoryTable({
                 <tr key={`${r.station_code}-${r.source_code}-${i}`} className="hover:bg-(--color-surface-hover)">
                   <td className="id-code px-3 py-2 text-(--color-text)">{r.station_code}</td>
                   <td className="px-3 py-2"><span className="id-code">{r.source_code}</span> {r.equipment_name}</td>
-                  <td className="id-code px-3 py-2 text-right">{r.current_stock}</td>
-                  <td className="id-code px-3 py-2 text-right">{r.minimum_level ?? "—"}</td>
+                  <td className="id-code px-3 py-2 text-right">{r.current_stock.toLocaleString("en-GB")}</td>
+                  <td className="id-code px-3 py-2 text-right">{r.minimum_level == null ? "—" : r.minimum_level.toLocaleString("en-GB")}</td>
                   <td className={`id-code px-3 py-2 text-right ${r.minimum_level == null ? "" : r.variance < 0 ? "text-(--color-danger)" : ""}`}>
-                    {r.minimum_level == null ? "—" : `${r.variance > 0 ? "+" : ""}${r.variance}`}
+                    {r.minimum_level == null ? "—" : `${r.variance > 0 ? "+" : ""}${r.variance.toLocaleString("en-GB")}`}
                   </td>
                   <td className="px-3 py-2"><span className={`tag ${STATUS_TAG[r.status] ?? "tag-neutral"}`}>{label(r.status)}</span></td>
                   <td className="px-3 py-2">
