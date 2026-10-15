@@ -7,6 +7,7 @@ import type { EquipmentTransfer, EquipmentTransferItem } from "@/types/transfers
 import {
   approveTransferAction,
   rejectTransferAction,
+  cancelTransferAction,
   dispatchTransferAction,
   receiveTransferAction,
   reconcileTransferAction,
@@ -45,6 +46,10 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
   const has = (p: string) => permissions.includes(p);
   const isOwnRequest = currentUserId === transfer.requested_by;
+  // The database decides who may cancel; this only decides whether to show the button.
+  const canCancel =
+    (transfer.status === "REQUESTED" && (isOwnRequest || has("approve_transfer"))) ||
+    (transfer.status === "APPROVED" && has("approve_transfer"));
 
   function qty(id: string, fallback: number) {
     return quantities[id] ?? fallback;
@@ -86,6 +91,32 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
       {error && (
         <div className="mb-3 alert alert-danger">{error}</div>
+      )}
+
+      {canCancel && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 border-b border-(--color-border) pb-4">
+          <button
+            disabled={pending}
+            onClick={() =>
+              setDialog({
+                title: "Cancel this transfer?",
+                description: transfer.status === "APPROVED"
+                  ? "Nothing has left the source station yet, so no stock changes. The transfer cannot be reopened."
+                  : "No stock changes. The request cannot be reopened; raise a new one if it is needed later.",
+                confirmLabel: "Cancel transfer",
+                danger: true,
+                reasonLabel: "Reason for cancelling",
+                go: (reason) => run(() => cancelTransferAction(transfer.id, reason)),
+              })
+            }
+            className="btn-secondary min-h-11 px-5 text-sm"
+          >
+            Cancel transfer
+          </button>
+          <span className="text-xs text-(--color-text-muted)">
+            {transfer.status === "APPROVED" ? "Possible until it is dispatched." : "Possible until it is approved."}
+          </span>
+        </div>
       )}
 
       {transfer.status === "REQUESTED" && (

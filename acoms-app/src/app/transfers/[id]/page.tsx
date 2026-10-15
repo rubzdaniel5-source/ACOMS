@@ -53,6 +53,14 @@ export default async function TransferDetailPage({
         <TransferStatusBadge status={t.status} />
       </div>
 
+      {t.status === "CANCELLED" && (
+        <div className="mb-4 alert alert-warning">
+          <span className="font-medium">Cancelled</span>
+          {t.cancelled_at ? ` on ${new Date(t.cancelled_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}
+          {t.cancel_reason ? `: ${t.cancel_reason}` : "."}
+        </div>
+      )}
+
       {t.reason && (
         <div className="mb-4 rounded-lg bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
           <span className="font-medium">Reason: </span>

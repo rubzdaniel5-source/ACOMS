@@ -67,6 +67,18 @@ export async function rejectTransferAction(
   return { success: true };
 }
 
+export async function cancelTransferAction(
+  transferId: string,
+  reason: string
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("cancel_transfer", { p_transfer_id: transferId, p_reason: reason });
+  if (error) return { success: false, error: error.message };
+  revalidatePath(`/transfers/${transferId}`);
+  revalidatePath("/transfers");
+  return { success: true };
+}
+
 export async function dispatchTransferAction(
   transferId: string,
   dispatchedItems: { item_id: string; quantity_dispatched: number }[]

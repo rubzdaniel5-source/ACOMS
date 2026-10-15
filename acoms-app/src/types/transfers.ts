@@ -36,6 +36,9 @@ export interface EquipmentTransfer {
   requested_at: string;
   approved_by: string | null;
   approved_at: string | null;
+  cancelled_by?: string | null;
+  cancelled_at?: string | null;
+  cancel_reason?: string | null;
   dispatched_by: string | null;
   dispatched_at: string | null;
   received_by: string | null;

@@ -25,13 +25,15 @@ export function AdjustmentForm({ stations, equipment, available }: { stations: S
   const options = equipment.filter((e) => !q || e.name.toLowerCase().includes(q) || e.source_code.toLowerCase().includes(q));
   const current = stationId && equipmentId ? available[`${stationId}:${equipmentId}`] ?? 0 : null;
   const qty = Number(quantity);
-  const after = current !== null && qty > 0 ? current + (direction === "INCREASE" ? qty : -qty) : null;
+  const isReceipt = reason === "NEW_STOCK_RECEIVED";
+  const effectiveDirection = isReceipt ? "INCREASE" : direction;
+  const after = current !== null && qty > 0 ? current + (effectiveDirection === "INCREASE" ? qty : -qty) : null;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await requestAdjustment({ stationId, equipmentId, direction, quantity: qty, reasonCode: reason, notes });
+      const res = await requestAdjustment({ stationId, equipmentId, direction: effectiveDirection, quantity: qty, reasonCode: reason, notes });
       if (!res.ok) return setError(res.error);
       router.push(`/admin/adjustments/${res.id}`);
     });
@@ -61,7 +63,7 @@ export function AdjustmentForm({ stations, equipment, available }: { stations: S
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div><label className="mb-1 block text-sm font-medium">Direction</label>
-          <select value={direction} onChange={(e) => setDirection(e.target.value)} className={input}>
+          <select value={effectiveDirection} disabled={isReceipt} onChange={(e) => setDirection(e.target.value)} className={input}>
             <option value="INCREASE">Increase stock</option><option value="DECREASE">Decrease stock</option>
           </select></div>
         <div><label className="mb-1 block text-sm font-medium">Quantity</label>
@@ -72,7 +74,7 @@ export function AdjustmentForm({ stations, equipment, available }: { stations: S
           </select></div>
       </div>
       <div><label className="mb-1 block text-sm font-medium">Explanation</label>
-        <textarea required minLength={10} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="What happened and how do you know? (at least 10 characters)" className={input} /></div>
+        <textarea required minLength={10} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={isReceipt ? "Supplier, delivery note or purchase order number, and what arrived" : "What happened and how do you know? (at least 10 characters)"} className={input} /></div>
 
       {error && <p className="rounded-sm px-3 py-2 text-sm text-(--brick)" style={{ background: "var(--brick-surface)" }}>{error}</p>}
       <button disabled={pending || !equipmentId || !stationId} className="btn-primary px-5 py-2 text-sm">{pending ? "Submitting…" : "Submit for approval"}</button>

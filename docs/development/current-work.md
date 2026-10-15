@@ -69,3 +69,9 @@ Each station keeps its own required level per item (station stock levels). Items
 
 ## Visual review (Stage 9)
 Reviewed the main screens at 360, 390, 768 and 1280 px in light and dark against a local copy of the app with demo data. Fixed: Admin menu squeezed its content on phones (now a scrolling strip above full-width content); Transfers list clipped its Status column on phones (now scrolls); the same clipping guard added to three dashboard detail tables; stock numbers in the Station Inventory table now use thousands separators like the alerts; spacing on the New transfer equipment heading. Wide tables on phones scroll sideways by design. Nothing else known; re-check after real data is loaded.
+
+## Cancel a transfer and book new stock (migration 029)
+- **Cancel a transfer.** A transfer can be cancelled with a required reason while it is REQUESTED (by the requester, or an approver at the source station) or APPROVED (approver at the source only). Never after dispatch; use receive and reconcile instead. No stock moves; the action is audited as `transfer.cancel`.
+- **New stock received.** New reason `NEW_STOCK_RECEIVED` on the two-person stock adjustment (increase only). On approval it posts to the ledger as `RECEIPT`, not `ADJUSTMENT`.
+- Tests: `supabase/tests/08_cancel_and_receipts.sql`. Database suite is now 218 checks, all passing.
+- **Run migration 029 in the Supabase project the live app uses.**
