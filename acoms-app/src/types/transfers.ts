@@ -39,6 +39,8 @@ export interface EquipmentTransfer {
   cancelled_by?: string | null;
   cancelled_at?: string | null;
   cancel_reason?: string | null;
+  exchange_id?: string | null;
+  exchange_leg?: "OUTBOUND" | "RETURN" | null;
   flight_leg_id?: string | null;
   flight_number?: string | null;
   flight_date?: string | null;

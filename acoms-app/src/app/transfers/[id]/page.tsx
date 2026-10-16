@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { TransferStatusBadge } from "@/components/ui/TransferStatusBadge";
 import { getCurrentUserPermissions, getCurrentUserId } from "@/features/auth/permissions";
@@ -39,6 +40,9 @@ export default async function TransferDetailPage({
   }
 
   const t = transfer as unknown as EquipmentTransfer;
+  const { data: exchange } = t.exchange_id
+    ? await supabase.from("equipment_exchanges").select("id, exchange_number").eq("id", t.exchange_id).maybeSingle()
+    : { data: null };
   const transferItems = (items ?? []) as unknown as EquipmentTransferItem[];
 
   return (
@@ -52,6 +56,13 @@ export default async function TransferDetailPage({
         </div>
         <TransferStatusBadge status={t.status} />
       </div>
+
+      {exchange && (
+        <div className="mb-4 rounded-lg bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
+          <span className="font-medium">{t.exchange_leg === "RETURN" ? "Return movement" : "Outbound movement"} of exchange </span>
+          <Link href={`/exchanges/${exchange.id}`} className="id-code text-(--color-primary) hover:underline">{exchange.exchange_number}</Link>
+        </div>
+      )}
 
       {t.status === "CANCELLED" && (
         <div className="mb-4 alert alert-warning">

@@ -12,6 +12,8 @@ begin
     ('cm_ebb',    'catering_manager',              'EBB'),
     ('asst_ebb',  'catering_assistant_base',       'EBB'),
     ('asst_abj',  'catering_assistant_outstation', 'ABJ'),
+    ('mgr_nbo',   'station_manager',               'NBO'),
+    ('asst_nbo',  'catering_assistant_outstation', 'NBO'),
     ('stores_ebb','stores_officer',                'EBB'),
     ('outsider',  null,                            null),
     ('inactive',  'station_manager',               'EBB')
@@ -27,4 +29,4 @@ begin
     end if;
   end loop;
 end $$;
-select test.ok((select count(*) from test.users) = 10, 'fixtures: 10 users created');
+select test.ok((select count(*) from test.users) = 12, 'fixtures: 12 users created');

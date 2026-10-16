@@ -38,9 +38,12 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
             What&apos;s in transit, what needs action, what&apos;s recently moved.
           </p>
         </div>
-        <Link href="/transfers/new" className="btn-primary px-4 py-2 text-sm">
-          New Transfer
-        </Link>
+        <div className="flex gap-3">
+          <Link href="/exchanges" className="btn-secondary px-4 py-2 text-sm">Exchanges</Link>
+          <Link href="/transfers/new" className="btn-primary px-4 py-2 text-sm">
+            New Transfer
+          </Link>
+        </div>
       </div>
 
       {status && VIEW_LABEL[status] && (

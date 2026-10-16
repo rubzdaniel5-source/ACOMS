@@ -99,3 +99,13 @@ Not yet covered: true two-session concurrency test (the lock is verified structu
 - Through-flights: a transfer's two stations may both lie on one flight's chain of sectors (EBB to LUN on UR722, which flies EBB-HRE-LUN-EBB). Every sector is linked (`flight_leg_ids`); cancelling any sector blocks dispatch. The New Transfer flight list now comes from `available_flights()` in the database.
 - Station stock status (migration 006): stock-holding ABJ ACC DAR DXB JNB FIH LGW LOS LUN BOM NBO plus hub EBB; no-stock turnaround BJM HRE JUB KGL JRO MGQ MBA ZNZ. The ledger refuses stock at a no-stock station.
 - Database suite: 299 checks.
+
+## Equipment Exchange MVP — Step 3: exchange cases (migration 033)
+- **Model:** `equipment_exchanges` is the parent case. Its outbound (hub to outstation) and return (outstation to hub) movements are ordinary transfers linked by `exchange_id` and `exchange_leg`, so every transfer rule applies unchanged. Status and next action are derived in `v_equipment_exchanges`, never typed in.
+- **Rules:** a flight is required on both legs; only stock-holding outstations take part (turnaround stations are loaded by the hub for both sectors); the return can start only after the outstation has received the outbound; return items and quantities are independent of the outbound; one active leg of each kind per exchange; a repeated "start" with the same key returns the same exchange.
+- **Closing:** `close_exchange` needs `reconcile_transfer` and both legs CLOSED. Close without a return is a two-person exception: someone with `create_transfer` requests it with a reason of 10+ characters; a different person with `approve_transfer` approves or declines with a note; approval needs the outbound closed and no return. Both steps are audited.
+- **Screens:** Exchanges list, New exchange, and an exchange page with both legs, progress steps, next action and actions. Transfer pages link back to their exchange.
+- **Tests:** `tests/11_exchange_cases.sql`, 64 checks. Suite: 363. Fixtures gained two NBO users.
+- **Open policy question:** return movements use the normal approval (a second person at the outstation). A one-person outstation may need a different rule.
+- **Not done yet:** receipt with condition, partial receipt and held excess (Step 4); a browser check of all screens (final stage).
+- **Run migrations 030, 031, 032, 033 in that order in the project the live app uses.**

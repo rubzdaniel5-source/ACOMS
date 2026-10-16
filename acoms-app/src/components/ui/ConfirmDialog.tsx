@@ -10,6 +10,8 @@ interface Props {
   danger?: boolean;
   /** When set, a reason must be entered before confirming. */
   reasonLabel?: string;
+  /** With reasonLabel: show the note box but do not require it. */
+  optionalReason?: boolean;
   pending?: boolean;
   onConfirm: (reason: string) => void;
   onCancel: () => void;
@@ -17,7 +19,7 @@ interface Props {
 
 // Themed confirmation built on the native <dialog>: focus is trapped, Escape
 // cancels, and background content is inert while it is open.
-export function ConfirmDialog({ open, title, description, confirmLabel, danger, reasonLabel, pending, onConfirm, onCancel }: Props) {
+export function ConfirmDialog({ open, title, description, confirmLabel, danger, reasonLabel, optionalReason, pending, onConfirm, onCancel }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
   const [reason, setReason] = useState("");
 
@@ -32,7 +34,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel, danger, 
   }, [open]);
 
   const needsReason = Boolean(reasonLabel);
-  const blocked = pending || (needsReason && reason.trim().length === 0);
+  const blocked = pending || (needsReason && !optionalReason && reason.trim().length === 0);
 
   return (
     <dialog
