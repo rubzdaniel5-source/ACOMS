@@ -148,13 +148,11 @@ end $$;
 
 -- ---- Dispatch: any cancelled sector on the chain blocks it ------------------------------
 do $$
-declare v_def text;
+declare v_def text; v_old constant text := 'join flight_legs l on l.id = t.flight_leg_id where t.id = p_transfer_id';
 begin
   v_def := pg_get_functiondef('dispatch_transfer(uuid, jsonb)'::regprocedure);
-  v_def := replace(v_def,
-    'v_transfer.flight_leg_id is not null and exists (select 1 from flight_legs where id = v_transfer.flight_leg_id and status = ''CANCELLED'')',
-    'exists (select 1 from flight_legs where id = any(coalesce(v_transfer.flight_leg_ids, array[v_transfer.flight_leg_id])) and status = ''CANCELLED'')');
-  if v_def not like '%flight_leg_ids%' then raise exception 'Failed to patch dispatch_transfer'; end if;
+  if position(v_old in v_def) = 0 then raise exception 'Run migration 031 first (dispatch_transfer has no flight check)'; end if;
+  v_def := replace(v_def, v_old, 'join flight_legs l on l.id = any(coalesce(t.flight_leg_ids, array[t.flight_leg_id])) where t.id = p_transfer_id');
   execute v_def;
 end $$;
 

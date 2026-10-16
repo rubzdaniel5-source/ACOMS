@@ -304,14 +304,14 @@ begin
     jsonb_build_object('flight', v_l.flight_number, 'date', v_l.operating_date), null);
 end $$;
 
--- A cancelled leg blocks dispatch.
+-- A cancelled leg blocks dispatch. The check is self-contained (it reads the transfer itself)
+-- and is placed right after the row lock added in migration 030.
 do $$
-declare v_def text;
+declare v_def text; v_anchor constant text := 'perform 1 from equipment_transfers where id = p_transfer_id for update;';
 begin
   v_def := pg_get_functiondef('dispatch_transfer(uuid, jsonb)'::regprocedure);
-  v_def := replace(v_def, 'perform _assert_unique_items(p_dispatched_items);',
-    E'if v_transfer.flight_leg_id is not null and exists (select 1 from flight_legs where id = v_transfer.flight_leg_id and status = ''CANCELLED'') then\n    raise exception ''The flight for this transfer has been cancelled. Choose another flight before dispatching.'';\n  end if;\n  perform _assert_unique_items(p_dispatched_items);');
-  if v_def not like '%flight for this transfer has been cancelled%' then raise exception 'Failed to patch dispatch_transfer'; end if;
+  if position(v_anchor in v_def) = 0 then raise exception 'Run migration 030 first (dispatch_transfer has no row lock)'; end if;
+  v_def := replace(v_def, v_anchor, v_anchor || E'\n  if exists (select 1 from equipment_transfers t join flight_legs l on l.id = t.flight_leg_id where t.id = p_transfer_id and l.status = ''CANCELLED'') then\n    raise exception ''The flight for this transfer has been cancelled. Choose another flight before dispatching.'';\n  end if;');
   execute v_def;
 end $$;
 

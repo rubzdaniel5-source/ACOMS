@@ -16,10 +16,11 @@
 -- no partial stock or status change.
 -- ============================================================================
 
-create or replace function _assert_unique_items(p_items jsonb)
+drop function if exists _assert_unique_items(jsonb);
+create or replace function _assert_unique_items(p_items jsonb, p_allow_empty boolean default false)
 returns void language plpgsql immutable set search_path = public as $$
 begin
-  if p_items is null or jsonb_typeof(p_items) <> 'array' or jsonb_array_length(p_items) = 0 then
+  if p_items is null or jsonb_typeof(p_items) <> 'array' or (jsonb_array_length(p_items) = 0 and not p_allow_empty) then
     raise exception 'A list of items is required';
   end if;
   if (select count(*) from jsonb_array_elements(p_items)) <>
@@ -27,29 +28,27 @@ begin
     raise exception 'Each item can only be listed once';
   end if;
 end $$;
-revoke execute on function _assert_unique_items(jsonb) from public, anon, authenticated;
+revoke execute on function _assert_unique_items(jsonb, boolean) from public, anon, authenticated;
 
 -- ---- Row locks on the existing functions ------------------------------------
+-- The lock (and, for dispatch and reconcile, the duplicate-line check) is inserted
+-- right after the function's first BEGIN, so it does not depend on how the rest of
+-- the body is written. Re-running this migration is safe: it skips a function that
+-- already has the lock.
 do $$
 declare
-  v_name text; v_def text;
-  v_old constant text := 'select * into v_transfer from equipment_transfers where id = p_transfer_id;';
-  v_new constant text := 'select * into v_transfer from equipment_transfers where id = p_transfer_id for update;';
+  v_name text; v_def text; v_arg text;
+  v_lock constant text := E'begin\n  perform 1 from equipment_transfers where id = p_transfer_id for update;';
 begin
   foreach v_name in array array['reject_transfer(uuid, text)', 'dispatch_transfer(uuid, jsonb)', 'reconcile_transfer(uuid, jsonb, text)',
                                 'close_transfer(uuid)', 'resolve_discrepancy(uuid, text)'] loop
     v_def := pg_get_functiondef(v_name::regprocedure);
-    if position(v_old in v_def) = 0 then raise exception 'Lock patch: pattern not found in %', v_name; end if;
-    v_def := replace(v_def, v_old, v_new);
-    if v_name like 'dispatch_transfer%' then
-      v_def := replace(v_def, 'for v_item in select * from jsonb_array_elements(p_dispatched_items)',
-        E'perform _assert_unique_items(p_dispatched_items);\n  for v_item in select * from jsonb_array_elements(p_dispatched_items)');
-      if v_def not like '%_assert_unique_items%' then raise exception 'Duplicate-line patch failed for dispatch'; end if;
-    elsif v_name like 'reconcile_transfer%' then
-      v_def := replace(v_def, 'for v_item in select * from jsonb_array_elements(p_reconciliation_items)',
-        E'perform _assert_unique_items(p_reconciliation_items);\n  for v_item in select * from jsonb_array_elements(p_reconciliation_items)');
-      if v_def not like '%_assert_unique_items%' then raise exception 'Duplicate-line patch failed for reconcile'; end if;
-    end if;
+    if v_def ilike '%perform 1 from equipment_transfers where id = p_transfer_id for update%' then continue; end if;
+    v_arg := case when v_name like 'dispatch_transfer%' then 'p_dispatched_items'
+                  when v_name like 'reconcile_transfer%' then 'p_reconciliation_items' else null end;
+    if v_def !~* '\mbegin\M' then raise exception 'Lock patch: no BEGIN found in %', v_name; end if;
+    v_def := regexp_replace(v_def, '\mbegin\M',
+      v_lock || case when v_arg is null then '' else E'\n  perform _assert_unique_items(' || v_arg || ', true);' end, 'i');
     execute v_def;
   end loop;
 end $$;
