@@ -47,6 +47,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     anyOf: ["manage_configuration"],
   },
   {
+    href: "/admin/flights",
+    label: "Flights",
+    description: "The flight schedule and dated flights that equipment movements are linked to.",
+    anyOf: ["manage_flights"],
+  },
+  {
     href: "/admin/stock-levels",
     label: "Station Stock Levels",
     description: "Set reorder thresholds and stock levels separately for each station.",

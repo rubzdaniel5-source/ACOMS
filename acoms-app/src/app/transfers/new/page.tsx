@@ -7,6 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { requestTransferAction } from "@/features/transfers/actions";
 import type { Station, EquipmentType } from "@/types/transfers";
 
+interface FlightRoute {
+  flight_number: string; origin_station_id: string; destination_station_id: string;
+  operating_days: number[]; valid_from: string; valid_to: string | null; is_active: boolean;
+}
+
 interface LineItem {
   equipment_type_id: string;
   quantity: number;
@@ -21,6 +26,9 @@ export default function NewTransferPage() {
   const [reason, setReason] = useState("");
   const [priority, setPriority] = useState("NORMAL");
   const [items, setItems] = useState<LineItem[]>([{ equipment_type_id: "", quantity: 1 }]);
+  const [routes, setRoutes] = useState<FlightRoute[]>([]);
+  const [flightDate, setFlightDate] = useState("");
+  const [flightNumber, setFlightNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,6 +40,12 @@ export default function NewTransferPage() {
       .eq("is_active", true)
       .order("code")
       .then(({ data }) => setStations((data as Station[]) ?? []));
+
+    supabase
+      .from("v_flight_routes")
+      .select("flight_number, origin_station_id, destination_station_id, operating_days, valid_from, valid_to, is_active")
+      .eq("is_active", true)
+      .then(({ data }) => setRoutes((data as FlightRoute[]) ?? []));
 
     supabase
       .from("equipment_types")
@@ -74,6 +88,8 @@ export default function NewTransferPage() {
       items: validItems,
       reason,
       priority,
+      flightNumber: flightNumber || undefined,
+      flightDate: flightNumber ? flightDate : undefined,
     });
     setSubmitting(false);
 
@@ -89,6 +105,14 @@ export default function NewTransferPage() {
   // that check once wired up; kept simple here to avoid over-building
   // ahead of real usage feedback).
   const fromStation = stations.find((s) => s.id === fromStationId);
+
+  // Scheduled flights for this route on the chosen date (the database re-checks all of this).
+  const candidates = (() => {
+    if (!fromStationId || !toStationId || !flightDate) return [];
+    const dow = ((new Date(flightDate + "T00:00:00").getDay() + 6) % 7) + 1;
+    return routes.filter((r) => r.origin_station_id === fromStationId && r.destination_station_id === toStationId
+      && r.operating_days.includes(dow) && flightDate >= r.valid_from && (!r.valid_to || flightDate <= r.valid_to));
+  })();
 
   const field = "min-h-11 w-full px-3 py-2 text-sm";
   const lbl = "mb-1 block text-sm font-medium text-(--color-text-muted)";
@@ -130,6 +154,28 @@ export default function NewTransferPage() {
               </select>
             </div>
           </div>
+        </section>
+
+        <section className="panel space-y-4 p-4 sm:p-5">
+          <h2 className="text-base font-semibold text-(--color-text)">Flight (optional)</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="flight-date" className={lbl}>Flight date</label>
+              <input id="flight-date" type="date" value={flightDate} onChange={(e) => { setFlightDate(e.target.value); setFlightNumber(""); }} className={field} />
+            </div>
+            <div>
+              <label htmlFor="flight-number" className={lbl}>Flight</label>
+              <select id="flight-number" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} disabled={candidates.length === 0} className={field}>
+                <option value="">{candidates.length === 0 ? "No flight selected" : "Select flight"}</option>
+                {candidates.map((r) => <option key={r.flight_number} value={r.flight_number}>{r.flight_number}</option>)}
+              </select>
+            </div>
+          </div>
+          {fromStationId && toStationId && flightDate && candidates.length === 0 && (
+            <p className="text-xs text-(--color-warning)">
+              No scheduled flight runs on this route on that date. You can still request the transfer; a station manager can add a one-off flight if needed.
+            </p>
+          )}
         </section>
 
         <section className="panel space-y-4 p-4 sm:p-5">

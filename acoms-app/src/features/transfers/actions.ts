@@ -22,8 +22,20 @@ export async function requestTransferAction(input: {
   items: { equipment_type_id: string; quantity: number }[];
   reason?: string;
   priority?: string;
+  flightNumber?: string;
+  flightDate?: string;
 }): Promise<ActionResult & { transferId?: string }> {
   const supabase = await createClient();
+  // Check the flight first, so an invalid flight creates nothing.
+  let legId: string | null = null;
+  if (input.flightNumber && input.flightDate) {
+    const leg = await supabase.rpc("ensure_flight_leg", {
+      p_flight_number: input.flightNumber, p_date: input.flightDate,
+      p_origin_station_id: input.fromStationId, p_destination_station_id: input.toStationId,
+    });
+    if (leg.error) return { success: false, error: leg.error.message };
+    legId = leg.data as string;
+  }
   const { data, error } = await supabase.rpc("request_transfer", {
     p_from_station_id: input.fromStationId,
     p_to_station_id: input.toStationId,
@@ -33,6 +45,10 @@ export async function requestTransferAction(input: {
   });
 
   if (error) return { success: false, error: error.message };
+  if (legId) {
+    const link = await supabase.rpc("set_transfer_flight", { p_transfer_id: data as string, p_flight_leg_id: legId });
+    if (link.error) return { success: false, error: `The request was created but the flight could not be linked: ${link.error.message}`, transferId: data as string };
+  }
   revalidatePath("/transfers");
   return { success: true, transferId: data as string };
 }

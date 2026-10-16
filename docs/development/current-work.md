@@ -84,3 +84,12 @@ Audit defects found by regression tests (`tests/09_transfer_safety.sql`, 26 chec
 - No row locking, so simultaneous clicks could both pass the status check.
 Fixes: row locks on all eight transfer functions, validation as above, "each line once" guard, receipt capped at dispatched (over-receipt refused for now; the controlled excess-hold state is Step 4). Function bodies only, no schema change. Database suite: 248 checks.
 Not yet covered: true two-session concurrency test (the lock is verified structurally); receive form still pre-fills dispatched numbers (changes in Step 4); request_transfer does not yet verify the destination station's organisation.
+
+## Equipment Exchange MVP — Step 2: flight-leg registry (migration 031)
+- **Source:** Winter 2026 schedule (effective 25 Oct 2026), main sheet "WINTER SCH": 54 sector entries (flight, origin, destination, operating weekdays) seeded into `flight_routes`. Every station in it exists in the station registry; ABJ and DXB are not served this season. The other sheets (With CAN, With additional routes, Options 2/3/206, cost saving) are alternative proposals and were not loaded.
+- **Two levels:** `flight_routes` (recurring schedule) and `flight_legs` (one dated flight on one sector, created on demand only if it matches an active route's weekday and season, or as a one-off with a reason). Legs can never be edited or deleted, only cancelled with a reason. Multi-sector flights are separate sectors.
+- **Transfers:** `set_transfer_flight` links a leg while REQUESTED or APPROVED; route must match the transfer's stations; cancelled legs refused; details are copied onto the transfer so history survives registry changes. A cancelled leg blocks dispatch. A flight is optional for now (made mandatory for hub exchanges in Step 3).
+- **Permission:** new `manage_flights` (system admin, station manager). Audited: route create/deactivate, one-off, cancel, set flight.
+- **UI:** Admin > Flights (schedule, upcoming dated flights, add flight, one-off, cancel); optional flight picker on New Transfer; flight shown on the transfer page.
+- Tests: `tests/10_flight_registry.sql`; database suite 288 checks. Not yet checked in a browser (done in the final stage).
+- **Run migration 031 after 030 in the project the live app uses.**

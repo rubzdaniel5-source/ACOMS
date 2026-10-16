@@ -61,6 +61,14 @@ export default async function TransferDetailPage({
         </div>
       )}
 
+      {t.flight_number && (
+        <div className="mb-4 rounded-lg bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
+          <span className="font-medium">Flight: </span>
+          {t.flight_number}, {t.flight_origin_code} to {t.flight_destination_code}
+          {t.flight_date ? `, ${new Date(t.flight_date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}` : ""}
+        </div>
+      )}
+
       {t.reason && (
         <div className="mb-4 rounded-lg bg-(--color-surface-subtle) px-4 py-3 text-sm text-(--color-text-muted)">
           <span className="font-medium">Reason: </span>
