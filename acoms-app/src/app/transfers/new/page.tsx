@@ -7,11 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import { requestTransferAction } from "@/features/transfers/actions";
 import type { Station, EquipmentType } from "@/types/transfers";
 
-interface FlightRoute {
-  flight_number: string; origin_station_id: string; destination_station_id: string;
-  operating_days: number[]; valid_from: string; valid_to: string | null; is_active: boolean;
-}
-
 interface LineItem {
   equipment_type_id: string;
   quantity: number;
@@ -26,7 +21,7 @@ export default function NewTransferPage() {
   const [reason, setReason] = useState("");
   const [priority, setPriority] = useState("NORMAL");
   const [items, setItems] = useState<LineItem[]>([{ equipment_type_id: "", quantity: 1 }]);
-  const [routes, setRoutes] = useState<FlightRoute[]>([]);
+  const [candidates, setCandidates] = useState<string[]>([]);
   const [flightDate, setFlightDate] = useState("");
   const [flightNumber, setFlightNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,12 +35,6 @@ export default function NewTransferPage() {
       .eq("is_active", true)
       .order("code")
       .then(({ data }) => setStations((data as Station[]) ?? []));
-
-    supabase
-      .from("v_flight_routes")
-      .select("flight_number, origin_station_id, destination_station_id, operating_days, valid_from, valid_to, is_active")
-      .eq("is_active", true)
-      .then(({ data }) => setRoutes((data as FlightRoute[]) ?? []));
 
     supabase
       .from("equipment_types")
@@ -106,13 +95,19 @@ export default function NewTransferPage() {
   // ahead of real usage feedback).
   const fromStation = stations.find((s) => s.id === fromStationId);
 
-  // Scheduled flights for this route on the chosen date (the database re-checks all of this).
-  const candidates = (() => {
-    if (!fromStationId || !toStationId || !flightDate) return [];
-    const dow = ((new Date(flightDate + "T00:00:00").getDay() + 6) % 7) + 1;
-    return routes.filter((r) => r.origin_station_id === fromStationId && r.destination_station_id === toStationId
-      && r.operating_days.includes(dow) && flightDate >= r.valid_from && (!r.valid_to || flightDate <= r.valid_to));
-  })();
+  // Flights for this route and date come from the database, which also covers through-flights.
+  useEffect(() => {
+    if (!fromStationId || !toStationId || !flightDate || fromStationId === toStationId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCandidates([]);
+      return;
+    }
+    let cancelled = false;
+    createClient()
+      .rpc("available_flights", { p_from: fromStationId, p_to: toStationId, p_date: flightDate })
+      .then(({ data }) => { if (!cancelled) setCandidates(((data as { flight_number: string }[]) ?? []).map((r) => r.flight_number)); });
+    return () => { cancelled = true; };
+  }, [fromStationId, toStationId, flightDate]);
 
   const field = "min-h-11 w-full px-3 py-2 text-sm";
   const lbl = "mb-1 block text-sm font-medium text-(--color-text-muted)";
@@ -167,7 +162,7 @@ export default function NewTransferPage() {
               <label htmlFor="flight-number" className={lbl}>Flight</label>
               <select id="flight-number" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} disabled={candidates.length === 0} className={field}>
                 <option value="">{candidates.length === 0 ? "No flight selected" : "Select flight"}</option>
-                {candidates.map((r) => <option key={r.flight_number} value={r.flight_number}>{r.flight_number}</option>)}
+                {candidates.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
           </div>

@@ -54,7 +54,7 @@ export function FlightManager({ routes, legs, stations, canManage, today }: { ro
           <h2 className="font-semibold text-(--navy)">New scheduled flight</h2>
           <div className="grid gap-3 sm:grid-cols-4">
             <div><label className="mb-1 block text-xs text-(--steel)">Flight number</label>
-              <input required value={routeForm.flightNumber} onChange={(e) => setRouteForm({ ...routeForm, flightNumber: e.target.value.toUpperCase() })} className={`${input} id-code`} /></div>
+              <input required placeholder="UR110" value={routeForm.flightNumber} onChange={(e) => setRouteForm({ ...routeForm, flightNumber: e.target.value.toUpperCase() })} className={`${input} id-code`} /></div>
             <div><label className="mb-1 block text-xs text-(--steel)">From</label>
               <select required value={routeForm.origin} onChange={(e) => setRouteForm({ ...routeForm, origin: e.target.value })} className={input}>
                 <option value="">Select</option>{stations.map((s) => <option key={s.id} value={s.code}>{s.code} — {s.name}</option>)}</select></div>
@@ -89,7 +89,7 @@ export function FlightManager({ routes, legs, stations, canManage, today }: { ro
           <h2 className="font-semibold text-(--navy)">New one-off flight</h2>
           <div className="grid gap-3 sm:grid-cols-4">
             <div><label className="mb-1 block text-xs text-(--steel)">Flight number</label>
-              <input required value={oneOff.flightNumber} onChange={(e) => setOneOff({ ...oneOff, flightNumber: e.target.value.toUpperCase() })} className={`${input} id-code`} /></div>
+              <input required placeholder="UR110" value={oneOff.flightNumber} onChange={(e) => setOneOff({ ...oneOff, flightNumber: e.target.value.toUpperCase() })} className={`${input} id-code`} /></div>
             <div><label className="mb-1 block text-xs text-(--steel)">Date</label>
               <input required type="date" value={oneOff.date} onChange={(e) => setOneOff({ ...oneOff, date: e.target.value })} className={input} /></div>
             <div><label className="mb-1 block text-xs text-(--steel)">From</label>

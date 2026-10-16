@@ -6,9 +6,9 @@ create function test.nextdow(p_dow int) returns date language sql as $$
 -- Seed
 select test.as_root();
 select test.eq_int((select count(*) from flight_routes where source like 'WINTER 2026%'), 54, 'seed: 54 scheduled routes loaded from the winter schedule');
-select test.ok((select operating_days = array[2,4,5,6,7]::smallint[] from v_flight_routes where flight_number = '120' and origin_code = 'EBB' and destination_code = 'JUB'), 'seed: 120 EBB-JUB operates Tue, Thu, Fri, Sat, Sun');
-select test.ok((select operating_days = array[1,2,3,4,5,6,7]::smallint[] from v_flight_routes where flight_number = '200' and origin_code = 'EBB' and destination_code = 'NBO'), 'seed: 200 EBB-NBO operates daily');
-select test.ok(exists (select 1 from v_flight_routes where flight_number = '334' and origin_code = 'ZNZ' and destination_code = 'JRO'), 'seed: multi-sector flights are stored as separate sectors');
+select test.ok((select operating_days = array[2,4,5,6,7]::smallint[] from v_flight_routes where flight_number = 'UR120' and origin_code = 'EBB' and destination_code = 'JUB'), 'seed: 120 EBB-JUB operates Tue, Thu, Fri, Sat, Sun');
+select test.ok((select operating_days = array[1,2,3,4,5,6,7]::smallint[] from v_flight_routes where flight_number = 'UR200' and origin_code = 'EBB' and destination_code = 'NBO'), 'seed: 200 EBB-NBO operates daily');
+select test.ok(exists (select 1 from v_flight_routes where flight_number = 'UR334' and origin_code = 'ZNZ' and destination_code = 'JRO'), 'seed: multi-sector flights are stored as separate sectors');
 
 -- Permissions on the schedule
 select test.as_user('stores_ebb');
@@ -27,6 +27,25 @@ select test.fails(format($$select ensure_flight_leg('120', %L, test.st('EBB'), t
 select test.fails(format($$select ensure_flight_leg('200', %L, test.st('NBO'), test.st('EBB'))$$, test.nextdow(2)), 'No scheduled flight', 'leg: 200 does not fly NBO to EBB (that is 201)');
 select test.fails($$select ensure_flight_leg('200', date '2026-10-20', test.st('EBB'), test.st('NBO'))$$, 'No scheduled flight', 'leg: before the season starts is refused');
 select test.fails(format($$select ensure_flight_leg('999', %L, test.st('EBB'), test.st('NBO'))$$, test.nextdow(2)), 'No scheduled flight', 'leg: an unknown flight number is never invented');
+-- Prefix and through-flights (migration 032)
+select test.ok((select array_agg(flight_number) from available_flights(test.st('EBB'), test.st('LUN'), test.nextdow(3))) @> array['UR722'], 'offer: the flight list includes through-flights for the route');
+select test.ok((select count(*) from available_flights(test.st('EBB'), test.st('ABJ'), test.nextdow(3))) = 0, 'offer: no flights are offered where none are scheduled');
+select test.ok(normalize_flight_number(' 200 ') = 'UR200' and normalize_flight_number('ur200') = 'UR200' and normalize_flight_number('UR200') = 'UR200', 'prefix: numbers are stored with the UR prefix');
+select test.ok(not exists (select 1 from flight_routes where source like 'WINTER%' and flight_number not like 'UR%'), 'prefix: every scheduled flight carries UR');
+select test.put('LTH', ensure_flight_leg('722', test.nextdow(3), test.st('EBB'), test.st('LUN')));
+select test.eq_int((select count(*) from flight_legs where flight_number = 'UR722' and operating_date = test.nextdow(3)), 2, 'through: both sectors (EBB-HRE and HRE-LUN) are created');
+select test.as_user('admin');
+select test.fails(format($$select ensure_flight_leg('110', %L, test.st('LGW'), test.st('EBB'))$$, test.nextdow(2)), 'No scheduled flight', 'through: the chain only runs in the flight''s direction (UR110 flies EBB to LGW only)');
+select test.as_user('asst_ebb');
+select test.put('TT', request_transfer(test.st('EBB'), test.st('LUN'), jsonb_build_array(jsonb_build_object('equipment_type_id', test.eq('C058'), 'quantity', 1)), 'through flight', 'NORMAL'));
+select test.works(format($$select set_transfer_flight(%L, %L)$$, test.get('TT'), test.get('LTH')), 'through: EBB to LUN can ride UR722 via HRE');
+select test.as_root();
+select test.eq_int((select cardinality(flight_leg_ids) from equipment_transfers where id = test.get('TT')), 2, 'through: both sectors are linked to the transfer');
+select test.as_user('mgr_ebb');
+select test.works(format($$select cancel_flight_leg((select id from flight_legs where flight_number = 'UR722' and operating_date = %L and origin_station_id = test.st('HRE')), 'Aircraft swap')$$, test.nextdow(3)), 'through: the second sector can be cancelled');
+select test.works(format($$select approve_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('TT','C058'), 'quantity_approved', 1)), 'ok')$$, test.get('TT')), 'through: approve');
+select test.as_user('asst_ebb');
+select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('TT','C058'), 'quantity_dispatched', 1)))$$, test.get('TT')), 'cancelled', 'through: a cancelled later sector blocks dispatch');
 select test.as_user('outsider');
 select test.fails(format($$select ensure_flight_leg('200', %L, test.st('EBB'), test.st('NBO'))$$, test.nextdow(3)), 'Permission denied', 'leg: a user without transfer rights cannot create legs');
 select test.as_user('mgr_ebb');
@@ -49,7 +68,7 @@ select test.works(format($$select set_transfer_flight(%L, %L)$$, test.get('T1'),
 select test.as_user('asst_abj');
 select test.fails(format($$select set_transfer_flight(%L, %L)$$, test.get('T1'), test.get('L200')), 'Only the requester', 'transfer flight: another station cannot change it');
 select test.as_root();
-select test.ok((select flight_number = '200' and flight_date = test.nextdow(2) and flight_origin_code = 'EBB' and flight_destination_code = 'NBO' from equipment_transfers where id = test.get('T1')), 'transfer flight: details are copied onto the transfer');
+select test.ok((select flight_number = 'UR200' and flight_date = test.nextdow(2) and flight_origin_code = 'EBB' and flight_destination_code = 'NBO' from equipment_transfers where id = test.get('T1')), 'transfer flight: details are copied onto the transfer');
 
 -- Cancelling a leg blocks dispatch; history survives
 select test.as_user('mgr_ebb');
@@ -66,7 +85,7 @@ select test.fails(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_
 select test.put('T3', request_transfer(test.st('EBB'), test.st('NBO'), jsonb_build_array(jsonb_build_object('equipment_type_id', test.eq('C058'), 'quantity', 1)), 'flight test 3', 'NORMAL'));
 select test.fails(format($$select set_transfer_flight(%L, %L)$$, test.get('T3'), test.get('L200')), 'cancelled', 'transfer flight: a cancelled leg cannot be chosen');
 select test.as_root();
-select test.ok((select flight_number = '200' from equipment_transfers where id = test.get('T1')), 'history: the transfer still shows its original flight');
+select test.ok((select flight_number = 'UR200' from equipment_transfers where id = test.get('T1')), 'history: the transfer still shows its original flight');
 select test.fails($$delete from flight_legs$$, 'cannot be deleted', 'history: flight legs cannot be deleted');
 select test.fails(format($$update flight_legs set flight_number = '201' where id = %L$$, test.get('L200')), 'cannot be changed', 'history: a leg''s flight, date and route cannot be edited');
 select test.ok((select status = 'CANCELLED' and cancel_reason = 'Aircraft grounded' from flight_legs where id = test.get('L200')), 'history: cancellation reason retained');

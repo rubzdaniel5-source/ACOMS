@@ -93,3 +93,9 @@ Not yet covered: true two-session concurrency test (the lock is verified structu
 - **UI:** Admin > Flights (schedule, upcoming dated flights, add flight, one-off, cancel); optional flight picker on New Transfer; flight shown on the transfer page.
 - Tests: `tests/10_flight_registry.sql`; database suite 288 checks. Not yet checked in a browser (done in the final stage).
 - **Run migration 031 after 030 in the project the live app uses.**
+
+### Step 2 follow-up (migration 032): UR prefix and through-flights
+- All flight numbers carry `UR` (UR110, UR200). Existing entries renamed; numbers typed without it are stored with it. Schedule is continuous (no end date). New flight numbers, routes and stations are added in Admin > Flights and Admin > Stations.
+- Through-flights: a transfer's two stations may both lie on one flight's chain of sectors (EBB to LUN on UR722, which flies EBB-HRE-LUN-EBB). Every sector is linked (`flight_leg_ids`); cancelling any sector blocks dispatch. The New Transfer flight list now comes from `available_flights()` in the database.
+- Station stock status (migration 006): stock-holding ABJ ACC DAR DXB JNB FIH LGW LOS LUN BOM NBO plus hub EBB; no-stock turnaround BJM HRE JUB KGL JRO MGQ MBA ZNZ. The ledger refuses stock at a no-stock station.
+- Database suite: 299 checks.
