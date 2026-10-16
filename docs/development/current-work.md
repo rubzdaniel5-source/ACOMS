@@ -75,3 +75,12 @@ Reviewed the main screens at 360, 390, 768 and 1280 px in light and dark against
 - **New stock received.** New reason `NEW_STOCK_RECEIVED` on the two-person stock adjustment (increase only). On approval it posts to the ledger as `RECEIPT`, not `ADJUSTMENT`.
 - Tests: `supabase/tests/08_cancel_and_receipts.sql`. Database suite is now 218 checks, all passing.
 - **Run migration 029 in the Supabase project the live app uses.**
+
+## Equipment Exchange MVP — Step 1: transfer safety fixes (migration 030)
+Audit defects found by regression tests (`tests/09_transfer_safety.sql`, 26 checks failed before the fix, all pass after):
+- Approval accepted a line from another transfer, negative or above-requested quantities.
+- Dispatch and reconcile posted stock twice if a line was listed twice.
+- Receipt accepted any quantity (over-receipt created stock), negatives, foreign lines, partial line lists.
+- No row locking, so simultaneous clicks could both pass the status check.
+Fixes: row locks on all eight transfer functions, validation as above, "each line once" guard, receipt capped at dispatched (over-receipt refused for now; the controlled excess-hold state is Step 4). Function bodies only, no schema change. Database suite: 248 checks.
+Not yet covered: true two-session concurrency test (the lock is verified structurally); receive form still pre-fills dispatched numbers (changes in Step 4); request_transfer does not yet verify the destination station's organisation.
