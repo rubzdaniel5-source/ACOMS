@@ -57,6 +57,26 @@ export default async function TransferDetailPage({
     supabase.rpc("auth_has_station_access", { target_station_id: t.to_station_id }),
   ]);
 
+  // Dispatch that would leave the source below its minimum level (at the approved quantities).
+  const belowMin =
+    t.status === "APPROVED" && srcAccess.data === true
+      ? (
+          await supabase.rpc("dispatch_below_minimum", {
+            p_transfer_id: id,
+            p_items: transferItems.map((i) => ({
+              item_id: i.id,
+              quantity_dispatched: String(i.quantity_approved ?? i.quantity_requested),
+            })),
+          })
+        ).data ?? []
+      : [];
+  const { data: roleRows } = currentUserId
+    ? await supabase.from("user_roles").select("station_id, role:role_id(code)").eq("user_id", currentUserId)
+    : { data: [] };
+  const canApproveBelowMin = ((roleRows ?? []) as unknown as { station_id: string | null; role: { code: string } | null }[]).some(
+    (r) => (r.station_id === null || r.station_id === t.from_station_id) && ["catering_supervisor", "catering_manager"].includes(r.role?.code ?? "")
+  );
+
   return (
     <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6">
       <div className="mb-6 flex items-start justify-between">
@@ -148,6 +168,8 @@ export default async function TransferDetailPage({
         currentUserId={currentUserId}
         atSource={srcAccess.data === true}
         atDestination={dstAccess.data === true}
+        belowMin={belowMin as { item_id: string; equipment_name: string; available: number; dispatching: number; minimum_level: number }[]}
+        canApproveBelowMin={canApproveBelowMin}
         openExcess={holds.some((h) => h.status === "HELD" || h.status === "INVESTIGATING")}
       />
     </div>

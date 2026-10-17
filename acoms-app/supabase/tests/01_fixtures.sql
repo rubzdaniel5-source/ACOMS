@@ -30,3 +30,6 @@ begin
   end loop;
 end $$;
 select test.ok((select count(*) from test.users) = 12, 'fixtures: 12 users created');
+-- The workbook minimum levels would put every test dispatch below minimum (rule added in 038);
+-- the two items the older tests move around start with no minimum. Test 16 sets its own.
+update equipment_types set reorder_threshold = 0 where source_code in ('C058', 'C081');

@@ -185,3 +185,11 @@ export async function resolveDiscrepancyAction(
   revalidatePath(`/transfers/${transferId}`);
   return { success: true };
 }
+
+export async function approveBelowMinimumAction(transferId: string, reason: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("approve_below_minimum_dispatch", { p_transfer_id: transferId, p_reason: reason });
+  if (error) return { success: false, error: error.message };
+  revalidatePath(`/transfers/${transferId}`);
+  return { success: true };
+}

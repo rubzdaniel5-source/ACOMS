@@ -33,6 +33,8 @@ export interface EquipmentTransfer {
   to_station_id: string;
   status: TransferStatus;
   requested_by: string;
+  below_min_approved_by?: string | null;
+  below_min_reason?: string | null;
   requested_at: string;
   approved_by: string | null;
   approved_at: string | null;

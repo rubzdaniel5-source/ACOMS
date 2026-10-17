@@ -13,6 +13,7 @@ import {
   reconcileTransferAction,
   closeTransferAction,
   resolveDiscrepancyAction,
+  approveBelowMinimumAction,
 } from "./actions";
 
 interface Props {
@@ -24,6 +25,8 @@ interface Props {
   atSource: boolean;
   atDestination: boolean;
   openExcess: boolean;
+  belowMin: { item_id: string; equipment_name: string; available: number; dispatching: number; minimum_level: number }[];
+  canApproveBelowMin: boolean;
 }
 
 /**
@@ -34,7 +37,7 @@ interface Props {
  * itself. A user could bypass this panel entirely and the database would
  * still refuse an invalid action.
  */
-export function TransferActionPanel({ transfer, items, permissions, currentUserId, atSource, atDestination, openExcess }: Props) {
+export function TransferActionPanel({ transfer, items, permissions, currentUserId, atSource, atDestination, openExcess, belowMin, canApproveBelowMin }: Props) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +45,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
   const [damaged, setDamaged] = useState<Record<string, number>>({});
   const [missing, setMissing] = useState<Record<string, number>>({});
   const [reasonText, setReasonText] = useState("");
+  const [minReason, setMinReason] = useState("");
   const [counted, setCounted] = useState<Record<string, string>>({});
   const [damagedCount, setDamagedCount] = useState<Record<string, string>>({});
   const [finalReceipt, setFinalReceipt] = useState(true);
@@ -178,6 +182,32 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
 
       {transfer.status === "APPROVED" && has("dispatch_transfer") && atSource && (
         <div className="space-y-3">
+          {belowMin.length > 0 && !transfer.below_min_approved_by && (
+            <div className="alert alert-warning space-y-2 text-sm">
+              <p className="font-medium">This dispatch leaves {transfer.from_station?.code ?? "the source"} below its minimum level.</p>
+              <ul className="list-disc pl-5">
+                {belowMin.map((b) => (
+                  <li key={b.item_id}>{b.equipment_name}: {b.available} in stock, sending {b.dispatching}, minimum {b.minimum_level}</li>
+                ))}
+              </ul>
+              {canApproveBelowMin ? (
+                <div className="space-y-2">
+                  <label className="block text-xs" htmlFor="min-reason">Reason for dispatching below the minimum (required)</label>
+                  <textarea id="min-reason" value={minReason} onChange={(e) => setMinReason(e.target.value)} rows={2}
+                    placeholder="Why is this dispatch needed even though stock will be low?" className="id-code w-full px-2 py-1" />
+                  <button disabled={pending || minReason.trim().length < 10} className="btn-primary min-h-11 px-4 text-sm"
+                    onClick={() => run(() => approveBelowMinimumAction(transfer.id, minReason.trim()))}>
+                    Approve dispatch below minimum
+                  </button>
+                </div>
+              ) : (
+                <p>A catering supervisor or catering manager must approve it, with a reason, before you can dispatch. You can also lower the quantities.</p>
+              )}
+            </div>
+          )}
+          {transfer.below_min_approved_by && (
+            <p className="alert alert-info text-sm">Dispatch below the minimum level was approved. Reason: {transfer.below_min_reason}</p>
+          )}
           <p className="text-xs text-(--color-text-subtle)">Confirm actual dispatched quantities:</p>
           {items.map((it) => (
             <div key={it.id} className="flex items-center justify-between gap-3 text-sm">
