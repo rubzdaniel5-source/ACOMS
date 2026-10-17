@@ -68,8 +68,12 @@ export function ExchangePanel({ ex, perms, userId }: { ex: ExchangeRow; perms: s
           <h2 className="mb-3 text-lg font-semibold text-(--color-text)">Return movement to {ex.hub_code}</h2>
           <p className="mb-3 text-sm text-(--color-text-muted)">Record what the outstation is actually sending back. It does not have to match what was received.</p>
           <MovementForm
+            mode="return"
             fromStationId={ex.outstation_id}
+            fromCode={ex.outstation_code}
             fixedToStationId={ex.hub_station_id}
+            fixedToCode={ex.hub_code}
+            outboundTransferId={ex.outbound_id}
             submitLabel="Record return"
             onCancel={() => setShowReturn(false)}
             onSubmit={async (v) => {

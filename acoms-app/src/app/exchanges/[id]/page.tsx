@@ -32,12 +32,12 @@ export default async function ExchangePage({ params }: { params: Promise<{ id: s
     getCurrentUserId(),
   ]);
   if (error || !data) {
-    return <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6"><p className="alert alert-danger">{error?.message ?? "Exchange not found."}</p></div>;
+    return <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6"><p className="alert alert-danger">{error?.message ?? "Exchange not found."}</p></div>;
   }
   const ex = data as ExchangeRow;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6">
+    <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6">
       <Link href="/exchanges" className="mb-4 inline-block text-sm text-(--color-primary) hover:underline">Back to exchanges</Link>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FlightPicker, type FlightChoice } from "@/components/flights/FlightPicker";
 import { createClient } from "@/lib/supabase/client";
 import { requestTransferAction } from "@/features/transfers/actions";
 import type { Station, EquipmentType } from "@/types/transfers";
@@ -21,9 +22,7 @@ export default function NewTransferPage() {
   const [reason, setReason] = useState("");
   const [priority, setPriority] = useState("NORMAL");
   const [items, setItems] = useState<LineItem[]>([{ equipment_type_id: "", quantity: 1 }]);
-  const [candidates, setCandidates] = useState<string[]>([]);
-  const [flightDate, setFlightDate] = useState("");
-  const [flightNumber, setFlightNumber] = useState("");
+  const [flight, setFlight] = useState<FlightChoice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -77,8 +76,8 @@ export default function NewTransferPage() {
       items: validItems,
       reason,
       priority,
-      flightNumber: flightNumber || undefined,
-      flightDate: flightNumber ? flightDate : undefined,
+      flightNumber: flight?.flightNumber,
+      flightDate: flight?.flightDate,
     });
     setSubmitting(false);
 
@@ -94,20 +93,6 @@ export default function NewTransferPage() {
   // that check once wired up; kept simple here to avoid over-building
   // ahead of real usage feedback).
   const fromStation = stations.find((s) => s.id === fromStationId);
-
-  // Flights for this route and date come from the database, which also covers through-flights.
-  useEffect(() => {
-    if (!fromStationId || !toStationId || !flightDate || fromStationId === toStationId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCandidates([]);
-      return;
-    }
-    let cancelled = false;
-    createClient()
-      .rpc("available_flights", { p_from: fromStationId, p_to: toStationId, p_date: flightDate })
-      .then(({ data }) => { if (!cancelled) setCandidates(((data as { flight_number: string }[]) ?? []).map((r) => r.flight_number)); });
-    return () => { cancelled = true; };
-  }, [fromStationId, toStationId, flightDate]);
 
   const field = "min-h-11 w-full px-3 py-2 text-sm";
   const lbl = "mb-1 block text-sm font-medium text-(--color-text-muted)";
@@ -153,24 +138,7 @@ export default function NewTransferPage() {
 
         <section className="panel space-y-4 p-4 sm:p-5">
           <h2 className="text-base font-semibold text-(--color-text)">Flight (optional)</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="flight-date" className={lbl}>Flight date</label>
-              <input id="flight-date" type="date" value={flightDate} onChange={(e) => { setFlightDate(e.target.value); setFlightNumber(""); }} className={field} />
-            </div>
-            <div>
-              <label htmlFor="flight-number" className={lbl}>Flight</label>
-              <select id="flight-number" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} disabled={candidates.length === 0} className={field}>
-                <option value="">{candidates.length === 0 ? "No flight selected" : "Select flight"}</option>
-                {candidates.map((f) => <option key={f} value={f}>{f}</option>)}
-              </select>
-            </div>
-          </div>
-          {fromStationId && toStationId && flightDate && candidates.length === 0 && (
-            <p className="text-xs text-(--color-warning)">
-              No scheduled flight runs on this route on that date. You can still request the transfer; a station manager can add a one-off flight if needed.
-            </p>
-          )}
+          <FlightPicker fromStationId={fromStationId} toStationId={toStationId} value={flight} onChange={setFlight} optional />
         </section>
 
         <section className="panel space-y-4 p-4 sm:p-5">

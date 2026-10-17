@@ -44,7 +44,7 @@ const n = (v: number) => v.toLocaleString("en-GB");
 
 export async function fetchAlertSources(supabase: SupabaseClient, perms: Set<string>) {
   const canApprove = perms.has("approve_adjustment");
-  const [overdue, adjustments, stations, exceptions, excess] = await Promise.all([
+  const [overdue, adjustments, stations, exceptions, excess, unverified] = await Promise.all([
     supabase.from("v_pending_transfers").select("id, transfer_number, status, from_station_code, to_station_code, hours_since_requested, overdue_kind, hours_in_status").eq("is_overdue", true),
     canApprove
       ? supabase.from("v_stock_adjustments").select("id, adjustment_number, station_code, source_code, direction, quantity, requested_at, requested_by").eq("status", "REQUESTED")
@@ -52,8 +52,11 @@ export async function fetchAlertSources(supabase: SupabaseClient, perms: Set<str
     supabase.from("stations").select("id, code"),
     supabase.from("v_unresolved_exceptions").select("*").order("updated_at", { ascending: true }),
     supabase.from("v_excess_holds").select("id, transfer_id, transfer_number, status, quantity, created_at, station_id, source_code, held_by, investigated_by").in("status", ["HELD", "INVESTIGATING"]),
+    perms.has("manage_flights")
+      ? supabase.from("v_flight_legs").select("id, flight_number, operating_date, origin_code, destination_code").eq("is_unverified", true).eq("status", "SCHEDULED").gte("operating_date", new Date().toISOString().slice(0, 10))
+      : Promise.resolve({ data: [], error: null }),
   ]);
-  return { overdue, adjustments, stations, exceptions, excess };
+  return { overdue, adjustments, stations, exceptions, excess, unverified };
 }
 
 export function buildAlerts(opts: {
@@ -165,6 +168,14 @@ export function buildAlerts(opts: {
       detail: `${n(h.quantity)} × ${h.source_code} counted beyond what was sent. Held, not available stock. ${days(ageHours(h.created_at))} old.`,
       href: `/transfers/${h.transfer_id}`, actions: [{ label: investigated ? "Authorise" : "Investigate", href: `/transfers/${h.transfer_id}` }],
       kindOrder: 1.2, urgency: ageHours(h.created_at),
+    });
+  }
+
+  for (const l of (sources.unverified?.data ?? []) as { id: string; flight_number: string; operating_date: string; origin_code: string; destination_code: string }[]) {
+    out.push({
+      key: `flight-${l.id}`, severity: "attention", label: "Flight awaiting confirmation", station: l.origin_code, reference: l.flight_number,
+      detail: `${l.origin_code} to ${l.destination_code} on ${new Date(l.operating_date + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })} was entered by hand and is not in the schedule.`,
+      href: "/admin/flights", actions: [{ label: "Confirm", href: "/admin/flights" }], kindOrder: 5.5, urgency: 0,
     });
   }
 

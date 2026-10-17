@@ -2,11 +2,11 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createRoute, setRouteActive, createOneOffLeg, cancelLeg } from "./actions";
+import { createRoute, setRouteActive, createOneOffLeg, cancelLeg, confirmLeg } from "./actions";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 export type Route = { id: string; flight_number: string; origin_code: string; destination_code: string; operating_days: number[]; valid_from: string; valid_to: string | null; is_active: boolean };
-export type Leg = { id: string; flight_number: string; operating_date: string; origin_code: string; destination_code: string; status: string; is_one_off: boolean; cancel_reason: string | null };
+export type Leg = { id: string; flight_number: string; operating_date: string; origin_code: string; destination_code: string; status: string; is_one_off: boolean; cancel_reason: string | null; is_unverified: boolean };
 export type Station = { id: string; code: string; name: string };
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -44,7 +44,7 @@ export function FlightManager({ routes, legs, stations, canManage, today }: { ro
 
       {canManage && (
         <div className="flex flex-wrap gap-3">
-          {!routeForm && <button className="btn-primary px-4 py-2 text-sm" onClick={() => setRouteForm({ flightNumber: "", origin: "", destination: "", days: [], validFrom: today, validTo: "", notes: "" })}>Add scheduled flight</button>}
+          {!routeForm && <button className="btn-primary px-4 py-2 text-sm" onClick={() => setRouteForm({ flightNumber: "", origin: "", destination: "", days: [], validFrom: "2000-01-01", validTo: "", notes: "" })}>Add scheduled flight</button>}
           {!oneOff && <button className="btn-secondary px-4 py-2 text-sm" onClick={() => setOneOff({ flightNumber: "", date: today, originId: "", destinationId: "", reason: "" })}>Add one-off flight</button>}
         </div>
       )}
@@ -61,10 +61,6 @@ export function FlightManager({ routes, legs, stations, canManage, today }: { ro
             <div><label className="mb-1 block text-xs text-(--steel)">To</label>
               <select required value={routeForm.destination} onChange={(e) => setRouteForm({ ...routeForm, destination: e.target.value })} className={input}>
                 <option value="">Select</option>{stations.map((s) => <option key={s.id} value={s.code}>{s.code} — {s.name}</option>)}</select></div>
-            <div><label className="mb-1 block text-xs text-(--steel)">Starts</label>
-              <input required type="date" value={routeForm.validFrom} onChange={(e) => setRouteForm({ ...routeForm, validFrom: e.target.value })} className={input} /></div>
-            <div><label className="mb-1 block text-xs text-(--steel)">Ends (optional)</label>
-              <input type="date" value={routeForm.validTo} onChange={(e) => setRouteForm({ ...routeForm, validTo: e.target.value })} className={input} /></div>
             <div className="sm:col-span-3"><label className="mb-1 block text-xs text-(--steel)">Notes</label>
               <input value={routeForm.notes} onChange={(e) => setRouteForm({ ...routeForm, notes: e.target.value })} className={input} /></div>
           </div>
@@ -120,10 +116,13 @@ export function FlightManager({ routes, legs, stations, canManage, today }: { ro
                 {legs.map((l) => (
                   <tr key={l.id} className="border-t border-(--border)">
                     <td className="p-3">{fmt(l.operating_date)}</td>
-                    <td className="id-code p-3">{l.flight_number}{l.is_one_off && <span className="tag tag-amber ml-2">One-off</span>}</td>
+                    <td className="id-code p-3">{l.flight_number}{l.is_unverified ? <span className="tag tag-amber ml-2">Unverified</span> : l.is_one_off && <span className="tag tag-amber ml-2">One-off</span>}</td>
                     <td className="p-3">{l.origin_code} to {l.destination_code}</td>
                     <td className="p-3">{l.status === "CANCELLED" ? <span className="tag tag-brick" title={l.cancel_reason ?? ""}>Cancelled</span> : <span className="tag tag-teal">Scheduled</span>}</td>
-                    <td className="p-3 text-right">{canManage && l.status === "SCHEDULED" && <button className="text-(--steel) hover:underline" disabled={pending} onClick={() => setCancelling(l)}>Cancel flight</button>}</td>
+                    <td className="p-3 text-right">
+                      {canManage && l.is_unverified && l.status === "SCHEDULED" && <button className="mr-3 font-semibold text-(--color-primary) hover:underline" disabled={pending} onClick={() => run(() => confirmLeg(l.id))}>Confirm</button>}
+                      {canManage && l.status === "SCHEDULED" && <button className="text-(--steel) hover:underline" disabled={pending} onClick={() => setCancelling(l)}>Cancel flight</button>}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -146,7 +145,7 @@ export function FlightManager({ routes, legs, stations, canManage, today }: { ro
                   <td className="id-code p-3">{r.flight_number}</td>
                   <td className="p-3">{r.origin_code} to {r.destination_code}</td>
                   <td className="p-3 text-(--steel)">{r.operating_days.length === 7 ? "Daily" : r.operating_days.map((d) => DAYS[d - 1]).join(", ")}</td>
-                  <td className="p-3 text-(--steel)">{fmt(r.valid_from)}{r.valid_to ? ` to ${fmt(r.valid_to)}` : " onwards"}</td>
+                  <td className="p-3 text-(--steel)">{r.valid_to ? `Until ${fmt(r.valid_to)}` : "Every week"}</td>
                   <td className="p-3">{r.is_active ? <span className="tag tag-teal">Active</span> : <span className="tag tag-brick">Inactive</span>}</td>
                   <td className="whitespace-nowrap p-3 text-right">
                     {canManage && <button className="text-(--steel) hover:underline" disabled={pending}

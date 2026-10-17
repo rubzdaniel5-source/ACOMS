@@ -46,3 +46,11 @@ export async function cancelLeg(id: string, reason: string): Promise<Result> {
   revalidatePath("/admin/flights");
   return { ok: true };
 }
+
+export async function confirmLeg(id: string): Promise<Result> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("confirm_flight_leg", { p_leg_id: id, p_note: null });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/flights");
+  return { ok: true };
+}

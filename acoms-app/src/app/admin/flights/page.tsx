@@ -11,7 +11,7 @@ export default async function FlightsPage() {
       .select("id, flight_number, origin_code, destination_code, operating_days, valid_from, valid_to, is_active, source")
       .order("flight_number").limit(500),
     supabase.from("v_flight_legs")
-      .select("id, flight_number, operating_date, origin_code, destination_code, status, is_one_off, cancel_reason")
+      .select("id, flight_number, operating_date, origin_code, destination_code, status, is_one_off, cancel_reason, is_unverified")
       .gte("operating_date", today).order("operating_date").limit(200),
     supabase.from("stations").select("id, code, name").eq("is_active", true).order("code"),
   ]);
@@ -19,8 +19,8 @@ export default async function FlightsPage() {
     <div>
       <h1 className="mb-1 text-xl font-semibold text-(--navy)">Flights</h1>
       <p className="mb-6 text-sm text-(--steel)">
-        The flight schedule used to link equipment movements to a real flight. Each sector is its own entry. A dated flight is created
-        only when it matches the schedule; anything else needs a one-off with a reason.
+        The flight schedule used to link equipment movements to a real flight. Each sector is its own entry. Flight numbers continue across
+        seasons, so a scheduled flight runs every week until it is deactivated. Base staff can enter a flight that is not listed; it shows here as unverified until you confirm it.
       </p>
       <FlightManager
         routes={(routes.data ?? []) as Route[]}

@@ -25,7 +25,7 @@ select test.put('L200', ensure_flight_leg('200', test.nextdow(2), test.st('EBB')
 select test.ok(ensure_flight_leg('200', test.nextdow(2), test.st('EBB'), test.st('NBO')) = test.get('L200'), 'leg: asking again returns the same leg (no duplicates)');
 select test.fails(format($$select ensure_flight_leg('120', %L, test.st('EBB'), test.st('JUB'))$$, test.nextdow(1)), 'No scheduled flight', 'leg: 120 does not operate on a Monday');
 select test.fails(format($$select ensure_flight_leg('200', %L, test.st('NBO'), test.st('EBB'))$$, test.nextdow(2)), 'No scheduled flight', 'leg: 200 does not fly NBO to EBB (that is 201)');
-select test.fails($$select ensure_flight_leg('200', date '2026-10-20', test.st('EBB'), test.st('NBO'))$$, 'No scheduled flight', 'leg: before the season starts is refused');
+select test.works($$select ensure_flight_leg('200', date '2026-10-20', test.st('EBB'), test.st('NBO'))$$, 'leg: the schedule is continuous, so a date before the old season start is accepted');
 select test.fails(format($$select ensure_flight_leg('999', %L, test.st('EBB'), test.st('NBO'))$$, test.nextdow(2)), 'No scheduled flight', 'leg: an unknown flight number is never invented');
 -- Prefix and through-flights (migration 032)
 select test.ok((select array_agg(flight_number) from available_flights(test.st('EBB'), test.st('LUN'), test.nextdow(3))) @> array['UR722'], 'offer: the flight list includes through-flights for the route');

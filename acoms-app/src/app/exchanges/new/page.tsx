@@ -22,7 +22,7 @@ export default function NewExchangePage() {
   const outstations = (stations ?? []).filter((s) => s.station_type === "STOCK_HOLDING");
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6">
+    <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6">
       <Link href="/exchanges" className="mb-4 inline-block text-sm text-(--color-primary) hover:underline">Back to exchanges</Link>
       <h1 className="mb-1 text-2xl font-semibold text-(--color-text)">New Exchange</h1>
       <p className="mb-6 text-sm text-(--color-text-muted)">
@@ -35,7 +35,9 @@ export default function NewExchangePage() {
         <p className="alert alert-danger">No active hub station is configured.</p>
       ) : (
         <MovementForm
+          mode="outbound"
           fromStationId={hub.id}
+          fromCode={hub.code}
           destinations={outstations}
           submitLabel="Start exchange"
           onSubmit={async (v) => {
