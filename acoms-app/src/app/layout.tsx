@@ -3,10 +3,12 @@ import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
 import { NavBar } from "@/components/ui/NavBar";
-import { getCurrentUserPermissions } from "@/features/auth/permissions";
+import { getCurrentUser, getCurrentUserPermissions } from "@/features/auth/permissions";
 import { canEnterAdmin } from "@/features/admin/access";
 import { THEME_INIT_SCRIPT } from "@/features/theme/theme";
 import { ThemeSync } from "@/features/theme/ThemeSync";
+import { Suspense } from "react";
+import { NavProgress } from "@/components/ui/NavProgress";
 import { PwaClient } from "@/components/pwa/PwaClient";
 
 const plexSans = IBM_Plex_Sans({
@@ -38,23 +40,21 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   let userName: string | null = null;
   let showAdmin = false;
   let accountTheme: string | null = null;
   if (user) {
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
+    // Run the three lookups together instead of one after another.
+    const [{ data: profile }, permissions, { data: themeRow }] = await Promise.all([
+      supabase.from("user_profiles").select("full_name").eq("id", user.id).single(),
+      getCurrentUserPermissions(),
+      // Separate query: before migration 024 this column does not exist and must not hide the user name.
+      supabase.from("user_profiles").select("theme_preference").eq("id", user.id).single(),
+    ]);
     userName = profile?.full_name ?? null;
-    showAdmin = canEnterAdmin(await getCurrentUserPermissions());
-    // Separate query: before migration 024 this column does not exist and must not hide the user name.
-    const { data: themeRow } = await supabase.from("user_profiles").select("theme_preference").eq("id", user.id).single();
+    showAdmin = canEnterAdmin(permissions);
     accountTheme = (themeRow as { theme_preference?: string | null } | null)?.theme_preference ?? null;
   }
 
@@ -65,6 +65,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="min-h-full flex flex-col font-sans bg-(--color-bg) text-(--color-text)">
         <PwaClient />
+        <Suspense fallback={null}><NavProgress /></Suspense>
         {user && <ThemeSync accountTheme={accountTheme} />}
         {user && <NavBar userName={userName} showAdmin={showAdmin} />}
         {children}

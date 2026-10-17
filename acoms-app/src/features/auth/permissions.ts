@@ -1,4 +1,14 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+
+// One sign-in check per request. The layout and each page used to repeat it (a network call each time).
+export const getCurrentUser = cache(async () => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user;
+});
 
 /**
  * Returns the set of permission codes the current user holds, across all
@@ -6,11 +16,9 @@ import { createClient } from "@/lib/supabase/server";
  * the real enforcement is server-side in the SQL functions (see
  * migration 011). Never trust this alone for authorization decisions.
  */
-export async function getCurrentUserPermissions(): Promise<Set<string>> {
+export const getCurrentUserPermissions = cache(async (): Promise<Set<string>> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) return new Set();
 
@@ -29,12 +37,8 @@ export async function getCurrentUserPermissions(): Promise<Set<string>> {
     }
   }
   return codes;
-}
+});
 
 export async function getCurrentUserId(): Promise<string | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user?.id ?? null;
+  return (await getCurrentUser())?.id ?? null;
 }
