@@ -27,3 +27,6 @@ Exchange is a controlled transfer process. Future optimization may recommend exc
 
 ## Integrity
 Prevent bypassing approval, over-receiving without authorized exception, and silent closure or alteration of completed transactions.
+
+## Receipt (updated)
+The receiver enters counted and damaged quantities per line without pre-filled values. Receipts may be partial (status PARTIALLY_RECEIVED) until a final receipt. Counted units beyond the dispatched quantity are held for investigation, not added to available stock; a different person authorises their treatment. Short quantities are reported shortages, not losses, until reconciled.

@@ -111,13 +111,38 @@ export async function dispatchTransferAction(
 
 export async function receiveTransferAction(
   transferId: string,
-  receivedItems: { item_id: string; quantity_received: number }[]
+  receivedItems: { item_id: string; quantity_counted: number; quantity_damaged: number }[],
+  isFinal: boolean,
+  notes?: string
 ): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("receive_transfer", {
     p_transfer_id: transferId,
     p_received_items: receivedItems,
+    p_final: isFinal,
+    p_notes: notes?.trim() || null,
   });
+  if (error) return { success: false, error: error.message };
+  revalidatePath(`/transfers/${transferId}`);
+  return { success: true };
+}
+
+export async function investigateExcessAction(holdId: string, transferId: string, findings: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("record_excess_investigation", { p_hold_id: holdId, p_findings: findings });
+  if (error) return { success: false, error: error.message };
+  revalidatePath(`/transfers/${transferId}`);
+  return { success: true };
+}
+
+export async function resolveExcessAction(
+  holdId: string,
+  transferId: string,
+  treatment: "ACCEPT_AS_STOCK" | "REMOVE_FROM_RECORDS",
+  reason: string
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("resolve_excess_hold", { p_hold_id: holdId, p_treatment: treatment, p_reason: reason });
   if (error) return { success: false, error: error.message };
   revalidatePath(`/transfers/${transferId}`);
   return { success: true };

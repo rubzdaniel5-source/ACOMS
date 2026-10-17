@@ -106,6 +106,16 @@ Not yet covered: true two-session concurrency test (the lock is verified structu
 - **Closing:** `close_exchange` needs `reconcile_transfer` and both legs CLOSED. Close without a return is a two-person exception: someone with `create_transfer` requests it with a reason of 10+ characters; a different person with `approve_transfer` approves or declines with a note; approval needs the outbound closed and no return. Both steps are audited.
 - **Screens:** Exchanges list, New exchange, and an exchange page with both legs, progress steps, next action and actions. Transfer pages link back to their exchange.
 - **Tests:** `tests/11_exchange_cases.sql`, 64 checks. Suite: 363. Fixtures gained two NBO users.
-- **Open policy question:** return movements use the normal approval (a second person at the outstation). A one-person outstation may need a different rule.
+- **Policy (settled in Step 4):** an outstation return needs no hub approval; one person at the outstation requests and dispatches it.
 - **Not done yet:** receipt with condition, partial receipt and held excess (Step 4); a browser check of all screens (final stage).
 - **Run migrations 030, 031, 032, 033 in that order in the project the live app uses.**
+
+## Equipment Exchange MVP — Step 4: receipt with condition, partial receipt, held excess (migration 034)
+- **Receive is independent:** the form no longer pre-fills dispatched numbers. The receiver enters what was physically *counted* and, separately, how many of those are *damaged*. For each line: accepted = counted (up to what is still expected) minus damaged, goes to available; damaged goes to the damaged bucket with a damage report; counted beyond what was dispatched is *excess*; short = dispatched minus accepted minus damaged.
+- **Shortage is not loss:** short units are only a reported shortage. Reconcile explains them (damaged, missing); a missing explanation opens a loss report for investigation, as before.
+- **Partial receipt:** `receive_transfer(id, items, final, notes)`. A non-final receipt records only the items entered and leaves the transfer PARTIALLY_RECEIVED (open, on the dashboard and the exchange next-action). A final receipt needs every item counted. Each receipt and its lines are kept (`equipment_transfer_receipts`, `equipment_transfer_receipt_lines`).
+- **Held excess:** over-receipt is recorded, never refused, but goes to a new *held* bucket (`held_quantity`, ledger EXCESS_HOLD / EXCESS_RELEASE) and an `excess_holds` record. Held units are not available. One person with `reconcile_transfer` records the investigation; a different person with `approve_adjustment` (not the counter or investigator) authorises ACCEPT_AS_STOCK (released to available) or REMOVE_FROM_RECORDS. The transfer cannot be resolved while any hold is open; reconcile with open excess lands in DISCREPANCY. Integrity checks gained HELD_MATCH.
+- **Return policy:** outstation returns start APPROVED (`approval_waived`, audited as `transfer.approval_waived`); one person dispatches.
+- **UI:** counted/damaged blank inputs, final-receipt switch, notes; transfer table shows Counted, Accepted, Damaged, Excess held, Short; excess panel for investigate/authorise.
+- **Tests:** `tests/12_receipt_condition.sql`; tests 09 and 11 updated for the new behaviour. Suite: 397 checks.
+- **Run migrations 030 to 034 in order in the project the live app uses.** Not yet checked in a browser (final stage).

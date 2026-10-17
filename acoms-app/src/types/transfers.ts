@@ -71,6 +71,10 @@ export interface EquipmentTransferItem {
   quantity_damaged: number;
   quantity_missing: number;
   quantity_rejected: number;
+  quantity_counted: number;
+  quantity_damaged_on_receipt: number;
+  quantity_excess_held: number;
+  quantity_short: number;
   notes: string | null;
   equipment_type?: EquipmentType;
 }

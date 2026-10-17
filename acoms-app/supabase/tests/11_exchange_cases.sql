@@ -47,7 +47,9 @@ select test.put('XR', start_exchange_return(test.get('X'), jsonb_build_array(jso
 select test.fails(format($$select start_exchange_return(%L, jsonb_build_array(jsonb_build_object('equipment_type_id', test.eq('C058'), 'quantity', 1)), 'again', 'NORMAL', 'UR201', %L)$$, test.get('X'), test.nextdow(5)), 'already has a return', 'return: only one active return per exchange');
 select test.as_root();
 select test.ok((select exchange_leg = 'RETURN' and from_station_id = test.st('NBO') and to_station_id = test.st('EBB') from equipment_transfers where id = test.get('XR')), 'return: runs NBO to EBB');
-select test.ok((select return_flight = 'UR201' and status = 'RETURN_IN_PROGRESS' and next_action = 'Approve the return movement' from v_equipment_exchanges where id = test.get('X')), 'state: return in progress, awaiting approval');
+select test.ok((select return_flight = 'UR201' and status = 'RETURN_IN_PROGRESS' from v_equipment_exchanges where id = test.get('X')), 'state: return in progress');
+select test.ok((select status = 'APPROVED' and approval_waived from equipment_transfers where id = test.get('XR')), 'return: needs no hub approval, ready for the outstation to dispatch');
+select test.ok(exists (select 1 from audit_logs where action = 'transfer.approval_waived'), 'audit: the waived approval is recorded');
 
 -- ---- Closure rules ----
 select test.as_user('mgr_ebb');
@@ -62,9 +64,7 @@ select test.works(format($$select close_transfer(%L)$$, test.get('XO')), 'outbou
 select test.as_user('mgr_ebb');
 select test.fails(format($$select close_exchange(%L)$$, test.get('X')), 'return movement must be reconciled', 'close: refused while the return is open');
 -- run the return leg
-select test.fails(format($$select approve_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('XR','C058'), 'quantity_approved', 4)), 'ok')$$, test.get('XR')), 'source station', 'return: the hub manager cannot approve a movement leaving the outstation');
-select test.as_user('mgr_nbo');
-select test.works(format($$select approve_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('XR','C058'), 'quantity_approved', 4)), 'ok')$$, test.get('XR')), 'return: outstation manager approves (not the requester)');
+select test.fails(format($$select approve_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('XR','C058'), 'quantity_approved', 4)), 'ok')$$, test.get('XR')), 'must be REQUESTED', 'return: there is nothing left to approve');
 select test.as_user('asst_nbo');
 select test.works(format($$select dispatch_transfer(%L, jsonb_build_array(jsonb_build_object('item_id', test.line('XR','C058'), 'quantity_dispatched', 4)))$$, test.get('XR')), 'return: dispatched from the outstation');
 select test.as_root();

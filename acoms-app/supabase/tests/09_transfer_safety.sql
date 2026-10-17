@@ -46,9 +46,9 @@ insert into b9 values ('abj058', test.avail('ABJ','C058')), ('abj081', test.avai
 -- ---- Receipt validation ----
 select test.as_user('asst_abj');
 select test.fails(format($$select receive_transfer(%L, jsonb_build_array(
-  jsonb_build_object('item_id', test.line('P','C058'), 'quantity_received', 7),
-  jsonb_build_object('item_id', test.line('P','C081'), 'quantity_received', 4)))$$, test.get('P')),
-  'exceeds', 'receive: more than was dispatched is refused (no stock created from nothing)');
+  jsonb_build_object('item_id', test.line('P','C058'), 'quantity_counted', 6, 'quantity_damaged', 7),
+  jsonb_build_object('item_id', test.line('P','C081'), 'quantity_counted', 4)))$$, test.get('P')),
+  'cannot exceed', 'receive: more damaged units than counted is refused');
 select test.fails(format($$select receive_transfer(%L, jsonb_build_array(
   jsonb_build_object('item_id', test.line('P','C058'), 'quantity_received', -1),
   jsonb_build_object('item_id', test.line('P','C081'), 'quantity_received', 4)))$$, test.get('P')),
@@ -67,8 +67,8 @@ select test.fails(format($$select receive_transfer(%L, jsonb_build_array(
 -- Atomicity: line 1 is valid, line 2 is not. Nothing may be posted for line 1.
 select test.fails(format($$select receive_transfer(%L, jsonb_build_array(
   jsonb_build_object('item_id', test.line('P','C058'), 'quantity_received', 6),
-  jsonb_build_object('item_id', test.line('P','C081'), 'quantity_received', 40)))$$, test.get('P')),
-  'exceeds', 'receive: a failure on a later line is refused');
+  jsonb_build_object('item_id', test.line('P','C081'), 'quantity_counted', 4, 'quantity_damaged', 5)))$$, test.get('P')),
+  'cannot exceed', 'receive: a failure on a later line is refused');
 select test.as_root();
 select test.eq_int(test.avail('ABJ','C058'), (select v from b9 where k='abj058'), 'atomic: C058 at ABJ unchanged after refused receipts');
 select test.eq_int(test.avail('ABJ','C081'), (select v from b9 where k='abj081'), 'atomic: C081 at ABJ unchanged after refused receipts');

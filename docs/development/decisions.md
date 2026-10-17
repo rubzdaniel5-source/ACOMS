@@ -45,3 +45,9 @@ Alerts are built in `features/dashboard/alerts.ts` from RLS-scoped views, one al
 - Retiring equipment needs the new `retire_equipment` permission (catering manager, catering supervisor, system administrator). Changeable in Roles & permissions.
 - Trolley tolerance stays 0: any count difference on a transfer is a discrepancy. Editable in the catalogue.
 - Revisit individual tracking only if operations later needs trolley-level history.
+
+## Receipt condition, partial receipt and excess (Step 4)
+- Receipt records the receiver's own count; nothing is pre-filled from the dispatch.
+- Excess units are recorded but held (not available) until investigated by one person and authorised by another.
+- A shortage is reported, not a confirmed loss, until reconciliation explains it.
+- Outstation-to-hub returns need no separate approval; one person may dispatch them.

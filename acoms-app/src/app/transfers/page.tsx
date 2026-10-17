@@ -7,6 +7,7 @@ const VIEW_LABEL: Record<string, string> = {
   REQUESTED: "Awaiting approval",
   APPROVED: "Awaiting dispatch",
   IN_TRANSIT: "In transit",
+  PARTIALLY_RECEIVED: "Partly received",
   RECEIVED: "Awaiting reconciliation",
   RECONCILIATION: "Reconciled, pending close",
   DISCREPANCY: "Discrepancies",

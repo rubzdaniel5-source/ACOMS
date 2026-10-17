@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TransferStatusBadge } from "@/components/ui/TransferStatusBadge";
 import { getCurrentUserPermissions, getCurrentUserId } from "@/features/auth/permissions";
 import { TransferActionPanel } from "@/features/transfers/TransferActionPanel";
+import { ExcessHoldPanel, type ExcessHoldRow } from "@/features/transfers/ExcessHoldPanel";
 import type { EquipmentTransfer, EquipmentTransferItem } from "@/types/transfers";
 
 export default async function TransferDetailPage({
@@ -44,6 +45,8 @@ export default async function TransferDetailPage({
     ? await supabase.from("equipment_exchanges").select("id, exchange_number").eq("id", t.exchange_id).maybeSingle()
     : { data: null };
   const transferItems = (items ?? []) as unknown as EquipmentTransferItem[];
+  const { data: holdRows } = await supabase.from("v_excess_holds").select("*").eq("transfer_id", id).order("created_at");
+  const holds = (holdRows ?? []) as unknown as ExcessHoldRow[];
 
   return (
     <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6">
@@ -95,8 +98,11 @@ export default async function TransferDetailPage({
               <th className="px-4 py-2">Requested</th>
               <th className="px-4 py-2">Approved</th>
               <th className="px-4 py-2">Dispatched</th>
-              <th className="px-4 py-2">Received</th>
+              <th className="px-4 py-2">Counted</th>
+              <th className="px-4 py-2">Accepted</th>
               <th className="px-4 py-2">Damaged</th>
+              <th className="px-4 py-2">Excess held</th>
+              <th className="px-4 py-2">Short</th>
               <th className="px-4 py-2">Missing</th>
             </tr>
           </thead>
@@ -110,14 +116,19 @@ export default async function TransferDetailPage({
                 <td className="px-4 py-2">{item.quantity_requested}</td>
                 <td className="px-4 py-2">{item.quantity_approved ?? "—"}</td>
                 <td className="px-4 py-2">{item.quantity_dispatched ?? "—"}</td>
+                <td className="px-4 py-2">{item.quantity_counted || "—"}</td>
                 <td className="px-4 py-2">{item.quantity_received ?? "—"}</td>
                 <td className="px-4 py-2">{item.quantity_damaged || "—"}</td>
+                <td className="px-4 py-2">{item.quantity_excess_held || "—"}</td>
+                <td className="px-4 py-2">{item.quantity_short || "—"}</td>
                 <td className="px-4 py-2">{item.quantity_missing || "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <ExcessHoldPanel transferId={t.id} holds={holds} permissions={Array.from(permissions)} currentUserId={currentUserId} />
 
       <TransferActionPanel
         transfer={t}

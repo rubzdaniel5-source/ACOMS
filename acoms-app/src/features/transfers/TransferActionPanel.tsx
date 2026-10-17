@@ -38,10 +38,14 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
   const [damaged, setDamaged] = useState<Record<string, number>>({});
   const [missing, setMissing] = useState<Record<string, number>>({});
   const [reasonText, setReasonText] = useState("");
+  const [counted, setCounted] = useState<Record<string, string>>({});
+  const [damagedCount, setDamagedCount] = useState<Record<string, string>>({});
+  const [finalReceipt, setFinalReceipt] = useState(true);
+  const [receiptNotes, setReceiptNotes] = useState("");
   // One themed confirmation for every consequential action. `go` runs only after the user confirms.
   const [dialog, setDialog] = useState<null | {
     title: string; description?: string; confirmLabel: string; danger?: boolean; reasonLabel?: string;
-    go: (reason: string) => Promise<void>;
+    go: (reason: string) => Promise<unknown>;
   }>(null);
 
   const has = (p: string) => permissions.includes(p);
@@ -62,9 +66,10 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
     setPending(false);
     if (!result.success) {
       setError(result.error ?? "Action failed.");
-      return;
+      return false;
     }
     router.refresh();
+    return true;
   }
 
   async function confirmed(reason: string) {
@@ -208,37 +213,68 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
         </div>
       )}
 
-      {transfer.status === "IN_TRANSIT" && has("receive_transfer") && (
+      {(transfer.status === "IN_TRANSIT" || transfer.status === "PARTIALLY_RECEIVED") && has("receive_transfer") && (
         <div className="space-y-3">
-          <p className="text-xs text-(--color-text-subtle)">Enter actual quantities received:</p>
-          {items.map((it) => (
-            <div key={it.id} className="flex items-center justify-between gap-3 text-sm">
-              <span>{it.equipment_type?.source_code} — {it.equipment_type?.name}</span>
-              <input
-                type="number"
-                min={0}
-                defaultValue={it.quantity_dispatched ?? 0}
-                onChange={(e) => setQuantities((q) => ({ ...q, [it.id]: parseInt(e.target.value, 10) || 0 }))}
-                className="id-code min-h-11 w-24 px-2 py-1"
-              />
-            </div>
-          ))}
+          <p className="text-xs text-(--color-text-subtle)">
+            Count what is physically in front of you. Leave nothing pre-filled: enter the units you counted and,
+            separately, how many of those are damaged. Units beyond what was sent are held for investigation, not added to stock.
+          </p>
+          {items.map((it) => {
+            const done = (it.quantity_received ?? 0) + (it.quantity_damaged_on_receipt ?? 0);
+            return (
+              <div key={it.id} className="grid grid-cols-[1fr_6rem_6rem] items-end gap-2 text-sm">
+                <div>
+                  <div>{it.equipment_type?.source_code} — {it.equipment_type?.name}</div>
+                  {done > 0 && <div className="text-xs text-(--color-text-subtle)">Already received: {done}</div>}
+                </div>
+                <div>
+                  <label className="text-xs text-(--color-text-subtle)">Counted</label>
+                  <input type="number" min={0} inputMode="numeric" value={counted[it.id] ?? ""}
+                    onChange={(e) => setCounted((c) => ({ ...c, [it.id]: e.target.value }))}
+                    className="id-code min-h-11 w-full px-2 py-1" />
+                </div>
+                <div>
+                  <label className="text-xs text-(--color-text-subtle)">Damaged</label>
+                  <input type="number" min={0} inputMode="numeric" value={damagedCount[it.id] ?? ""}
+                    onChange={(e) => setDamagedCount((c) => ({ ...c, [it.id]: e.target.value }))}
+                    className="id-code min-h-11 w-full px-2 py-1" />
+                </div>
+              </div>
+            );
+          })}
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={finalReceipt} onChange={(e) => setFinalReceipt(e.target.checked)} />
+            This is the final receipt (nothing more is still to arrive)
+          </label>
+          {!finalReceipt && (
+            <p className="text-xs text-(--color-text-subtle)">
+              Only items you have entered are recorded. The transfer stays open until a final receipt is made.
+            </p>
+          )}
+          <textarea value={receiptNotes} onChange={(e) => setReceiptNotes(e.target.value)} rows={2}
+            placeholder="Notes (optional)" className="id-code w-full px-2 py-1 text-sm" />
           <button
             disabled={pending}
-            onClick={() =>
-              run(() =>
-                receiveTransferAction(
-                  transfer.id,
-                  items.map((it) => ({
-                    item_id: it.id,
-                    quantity_received: qty(it.id, it.quantity_dispatched ?? 0),
-                  }))
-                )
-              )
-            }
+            onClick={() => {
+              const lines = items
+                .filter((it) => (counted[it.id] ?? "") !== "")
+                .map((it) => ({
+                  item_id: it.id,
+                  quantity_counted: parseInt(counted[it.id], 10) || 0,
+                  quantity_damaged: parseInt(damagedCount[it.id] ?? "", 10) || 0,
+                }));
+              if (finalReceipt && lines.length < items.filter((it) => !((it.quantity_received ?? 0) + (it.quantity_damaged_on_receipt ?? 0) > 0)).length) {
+                setError("Enter the counted quantity for every item, even if it is 0.");
+                return;
+              }
+              if (lines.length === 0) { setError("Enter the counted quantity for at least one item."); return; }
+              run(() => receiveTransferAction(transfer.id, lines, finalReceipt, receiptNotes)).then((ok) => {
+                if (ok) { setCounted({}); setDamagedCount({}); setReceiptNotes(""); }
+              });
+            }}
             className="btn-primary min-h-11 px-5 text-sm"
           >
-            Confirm Receipt
+            {finalReceipt ? "Confirm final receipt" : "Save partial receipt"}
           </button>
         </div>
       )}
