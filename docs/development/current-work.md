@@ -119,3 +119,11 @@ Not yet covered: true two-session concurrency test (the lock is verified structu
 - **UI:** counted/damaged blank inputs, final-receipt switch, notes; transfer table shows Counted, Accepted, Damaged, Excess held, Short; excess panel for investigate/authorise.
 - **Tests:** `tests/12_receipt_condition.sql`; tests 09 and 11 updated for the new behaviour. Suite: 397 checks.
 - **Run migrations 030 to 034 in order in the project the live app uses.** Not yet checked in a browser (final stage).
+
+## Equipment Exchange MVP — Step 5: dashboard and screen counts (migration 035)
+- **New views (read-only, security_invoker):** `v_exchange_funnel` (open, outbound in progress, awaiting return, return in progress, ready to close, no-return pending, with discrepancy), `v_excess_summary` (open holds, held units, awaiting investigation, awaiting authorisation). `v_movement_funnel` gained `partially_received`; "awaiting receipt" counts in-transit plus partly received.
+- **Dashboard:** Movement card shows Awaiting Approval, Awaiting Dispatch, Awaiting Receipt, Disputed. New Equipment Exchanges card (each stat links to a filtered Exchanges list). Reconciliation card shows Excess Held (units). Action Required lists excess awaiting investigation (for reconcilers) and awaiting authorisation (for approvers other than the counter or investigator).
+- **Lists:** Transfers accepts `?status=receipt` (in transit plus partly received); Exchanges accepts `?status=` for a stage or DISCREPANCY.
+- **Tests:** `tests/13_dashboard_counts.sql`; suite 405 checks. App tests 21 pass.
+- **Run migration 035 after 034.** Until it is run, the dashboard shows dashes and its warning banner for the exchange and excess figures.
+- Not yet checked in a browser (Step 6).

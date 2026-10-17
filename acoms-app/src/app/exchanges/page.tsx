@@ -3,12 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserPermissions } from "@/features/auth/permissions";
 import { EXCHANGE_STATUS_LABEL, EXCHANGE_STATUS_TAG, type ExchangeRow } from "@/features/exchanges/status";
 
-export default async function ExchangesPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
-  const { view } = await searchParams;
+export default async function ExchangesPage({ searchParams }: { searchParams: Promise<{ view?: string; status?: string }> }) {
+  const { view, status } = await searchParams;
   const supabase = await createClient();
   const perms = await getCurrentUserPermissions();
   let q = supabase.from("v_equipment_exchanges").select("*").order("created_at", { ascending: false }).limit(100);
-  if (view !== "all") q = q.not("status", "in", "(CLOSED,CLOSED_NO_RETURN,CANCELLED)");
+  if (status === "DISCREPANCY") q = q.eq("has_open_discrepancy", true).not("status", "in", "(CLOSED,CLOSED_NO_RETURN,CANCELLED)");
+  else if (status && EXCHANGE_STATUS_LABEL[status]) q = q.eq("status", status);
+  else if (view !== "all") q = q.not("status", "in", "(CLOSED,CLOSED_NO_RETURN,CANCELLED)");
   const { data, error } = await q;
   const rows = (data ?? []) as ExchangeRow[];
 
@@ -26,9 +28,9 @@ export default async function ExchangesPage({ searchParams }: { searchParams: Pr
       </div>
 
       <p className="mb-4 flex flex-wrap items-center gap-3 text-sm text-(--color-text-muted)">
-        {view === "all" ? "Showing all exchanges." : "Showing open exchanges."}
-        <Link href={view === "all" ? "/exchanges" : "/exchanges?view=all"} className="font-semibold text-(--color-primary) hover:underline">
-          {view === "all" ? "Show open only" : "Show all"}
+        {status ? <>Showing: <span className="tag tag-info">{status === "DISCREPANCY" ? "With discrepancy" : EXCHANGE_STATUS_LABEL[status] ?? status}</span></> : view === "all" ? "Showing all exchanges." : "Showing open exchanges."}
+        <Link href={status ? "/exchanges" : view === "all" ? "/exchanges" : "/exchanges?view=all"} className="font-semibold text-(--color-primary) hover:underline">
+          {status ? "Show open exchanges" : view === "all" ? "Show open only" : "Show all"}
         </Link>
       </p>
 

@@ -12,6 +12,7 @@ const VIEW_LABEL: Record<string, string> = {
   RECONCILIATION: "Reconciled, pending close",
   DISCREPANCY: "Discrepancies",
   CLOSED: "Closed",
+  receipt: "Awaiting receipt",
   open: "Requiring action",
 };
 
@@ -27,6 +28,7 @@ export default async function TransfersPage({ searchParams }: { searchParams: Pr
     .order("requested_at", { ascending: false })
     .limit(50);
   if (status === "open") query = query.not("status", "in", "(CLOSED,REJECTED,CANCELLED)");
+  else if (status === "receipt") query = query.in("status", ["IN_TRANSIT", "PARTIALLY_RECEIVED"]);
   else if (status && VIEW_LABEL[status]) query = query.eq("status", status);
   const { data: transfers, error } = await query;
 

@@ -44,15 +44,16 @@ const n = (v: number) => v.toLocaleString("en-GB");
 
 export async function fetchAlertSources(supabase: SupabaseClient, perms: Set<string>) {
   const canApprove = perms.has("approve_adjustment");
-  const [overdue, adjustments, stations, exceptions] = await Promise.all([
+  const [overdue, adjustments, stations, exceptions, excess] = await Promise.all([
     supabase.from("v_pending_transfers").select("id, transfer_number, status, from_station_code, to_station_code, hours_since_requested, overdue_kind, hours_in_status").eq("is_overdue", true),
     canApprove
       ? supabase.from("v_stock_adjustments").select("id, adjustment_number, station_code, source_code, direction, quantity, requested_at, requested_by").eq("status", "REQUESTED")
       : Promise.resolve({ data: [], error: null }),
     supabase.from("stations").select("id, code"),
     supabase.from("v_unresolved_exceptions").select("*").order("updated_at", { ascending: true }),
+    supabase.from("v_excess_holds").select("id, transfer_id, transfer_number, status, quantity, created_at, station_id, source_code, held_by, investigated_by").in("status", ["HELD", "INVESTIGATING"]),
   ]);
-  return { overdue, adjustments, stations, exceptions };
+  return { overdue, adjustments, stations, exceptions, excess };
 }
 
 export function buildAlerts(opts: {
@@ -147,6 +148,23 @@ export function buildAlerts(opts: {
       detail: `${a.source_code}: ${a.direction === "INCREASE" ? "increase" : "decrease"} of ${n(a.quantity)}. Requested ${days(ageHours(a.requested_at))} ago.`,
       href: `/admin/adjustments/${a.id}`, actions: [{ label: "Review", href: `/admin/adjustments/${a.id}` }],
       kindOrder: 5, urgency: ageHours(a.requested_at),
+    });
+  }
+
+  type Hold = { id: string; transfer_id: string; transfer_number: string; status: string; quantity: number; created_at: string; station_id: string; source_code: string; held_by: string; investigated_by: string | null };
+  for (const h of (sources.excess?.data ?? []) as Hold[]) {
+    const station = stationCode.get(h.station_id) ?? null;
+    const investigated = h.status === "INVESTIGATING";
+    // Only show the second step to someone who may actually take it.
+    if (investigated && (!perms.has("approve_adjustment") || h.held_by === userId || h.investigated_by === userId)) continue;
+    if (!investigated && !perms.has("reconcile_transfer")) continue;
+    out.push({
+      key: `excess-${h.id}`, severity: "warning",
+      label: investigated ? "Excess awaiting authorisation" : "Excess awaiting investigation",
+      station, reference: h.transfer_number,
+      detail: `${n(h.quantity)} × ${h.source_code} counted beyond what was sent. Held, not available stock. ${days(ageHours(h.created_at))} old.`,
+      href: `/transfers/${h.transfer_id}`, actions: [{ label: investigated ? "Authorise" : "Investigate", href: `/transfers/${h.transfer_id}` }],
+      kindOrder: 1.2, urgency: ageHours(h.created_at),
     });
   }
 

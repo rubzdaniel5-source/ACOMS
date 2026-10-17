@@ -10,7 +10,7 @@ import { StationInventoryTable, type InventoryRow } from "./station-inventory/St
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [overview, inventory, movement, lossDamage, reconciliation, perms] = await Promise.all([
+  const [overview, inventory, movement, lossDamage, reconciliation, exchangeFunnel, excessSummary, perms] = await Promise.all([
     supabase.from("v_equipment_overview").select("*").single(),
     fetchAll<any>((from, to) =>
       supabase
@@ -22,6 +22,8 @@ export default async function DashboardPage() {
     supabase.from("v_movement_funnel").select("*").single(),
     supabase.from("v_loss_damage_summary").select("*").single(),
     supabase.from("v_reconciliation_summary").select("*").single(),
+    supabase.from("v_exchange_funnel").select("*").single(),
+    supabase.from("v_excess_summary").select("*").single(),
     getCurrentUserPermissions(),
   ]);
 
@@ -40,7 +42,7 @@ export default async function DashboardPage() {
 
   // A missing result means the query failed, not that the count is zero (ACOMS-DESIGN-001 s21).
   const val = (row: any, key: string): number | string => (row ? (row[key] ?? 0) : "—");
-  const failed = [overview, inventory, movement, lossDamage, reconciliation, sources.exceptions, sources.overdue, sources.adjustments].some((r) => r.error);
+  const failed = [overview, inventory, movement, lossDamage, reconciliation, exchangeFunnel, excessSummary, sources.excess, sources.exceptions, sources.overdue, sources.adjustments].some((r) => r.error);
   const alerts = buildAlerts({ invRows, sources, perms, userId });
   const SHOWN = 8;
   const updatedAt = new Intl.DateTimeFormat("en-GB", {
@@ -53,6 +55,8 @@ export default async function DashboardPage() {
   const m = movement.data as any;
   const ld = lossDamage.data as any;
   const rc = reconciliation.data as any;
+  const xf = exchangeFunnel.data as any;
+  const ex = excessSummary.data as any;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-6 sm:px-6">
@@ -107,8 +111,21 @@ export default async function DashboardPage() {
           stats={[
             { label: "Awaiting Approval", value: val(m, "awaiting_approval"), tone: "amber", href: "/transfers?status=REQUESTED" },
             { label: "Awaiting Dispatch", value: val(m, "awaiting_dispatch"), href: "/transfers?status=APPROVED" },
-            { label: "In Transit", value: val(m, "in_transit"), href: "/transfers?status=IN_TRANSIT" },
+            { label: "Awaiting Receipt", value: val(m, "awaiting_receipt"), href: "/transfers?status=receipt" },
             { label: "Disputed", value: val(m, "disputed"), tone: "brick", href: "/transfers?status=DISCREPANCY" },
+          ]}
+        />
+
+        <ControlCard
+          title="Equipment Exchanges"
+          icon="swap"
+          href="/exchanges"
+          headline={{ value: val(xf, "open_exchanges"), label: "Open Exchanges", href: "/exchanges" }}
+          stats={[
+            { label: "Outbound in Progress", value: val(xf, "outbound_in_progress"), href: "/exchanges?status=OUTBOUND" },
+            { label: "Awaiting Return", value: val(xf, "awaiting_return"), tone: "amber", href: "/exchanges?status=AWAITING_RETURN" },
+            { label: "Ready to Close", value: val(xf, "ready_to_close"), tone: "teal", href: "/exchanges?status=READY_TO_CLOSE" },
+            { label: "With Discrepancy", value: val(xf, "with_discrepancy"), tone: "brick", href: "/exchanges?status=DISCREPANCY" },
           ]}
         />
 
@@ -133,6 +150,7 @@ export default async function DashboardPage() {
           stats={[
             { label: "Reconciled (Pending Close)", value: val(rc, "reconciled_pending_close"), href: "/transfers?status=RECONCILIATION" },
             { label: "Discrepancies", value: val(rc, "discrepancies"), tone: "brick", href: "/transfers?status=DISCREPANCY" },
+            { label: "Excess Held (units)", value: val(ex, "held_units"), tone: Number(ex?.held_units) > 0 ? "amber" : "default", href: "/transfers?status=DISCREPANCY" },
             { label: "Closed (Total)", value: val(rc, "closed_total"), tone: "teal", href: "/transfers?status=CLOSED" },
           ]}
         />
