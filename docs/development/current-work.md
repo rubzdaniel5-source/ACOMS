@@ -127,3 +127,9 @@ Not yet covered: true two-session concurrency test (the lock is verified structu
 - **Tests:** `tests/13_dashboard_counts.sql`; suite 405 checks. App tests 21 pass.
 - **Run migration 035 after 034.** Until it is run, the dashboard shows dashes and its warning banner for the exchange and excess figures.
 - Not yet checked in a browser (Step 6).
+
+## Open items closed (migration 036 and tests)
+- **`request_transfer` validation (036):** both stations must exist, be active and belong to the caller's organisation; source and destination differ; priority known; each item once, whole-number quantity above zero, equipment type known in the organisation. Same signature. Tests: `tests/14_request_validation.sql` (suite 417 checks).
+- **Concurrency:** `tests/concurrency.sh` races two real database sessions on one transfer (dispatch, then receipt). The second waits for the row lock, then is refused; stock moves exactly once. Run separately from `run.sh`.
+- **Within-tolerance difference:** a quantity that is neither accepted, damaged nor reported missing, and is inside the item's tolerance, still lets a transfer close with no loss record (existing rule). It is now shown as "Unexplained" on reconciled and closed transfers. **Decision needed from operations:** keep this, or require a loss/adjustment record for any unexplained unit.
+- **Run migration 036 in Supabase.**

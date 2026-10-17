@@ -46,6 +46,11 @@ export default async function TransferDetailPage({
     : { data: null };
   const transferItems = (items ?? []) as unknown as EquipmentTransferItem[];
   const { data: holdRows } = await supabase.from("v_excess_holds").select("*").eq("transfer_id", id).order("created_at");
+  // After reconciliation: units sent that are neither accepted, damaged nor reported missing.
+  // They were within the item's tolerance, so the transfer could close, but they are shown rather than hidden.
+  const unexplained = (i: EquipmentTransferItem) =>
+    Math.max(0, (i.quantity_dispatched ?? 0) - (i.quantity_received ?? 0) - (i.quantity_damaged ?? 0) - (i.quantity_missing ?? 0));
+  const showUnexplained = ["RECONCILIATION", "CLOSED"].includes(t.status) && transferItems.some((i) => unexplained(i) > 0);
   const holds = (holdRows ?? []) as unknown as ExcessHoldRow[];
   const [srcAccess, dstAccess] = await Promise.all([
     supabase.rpc("auth_has_station_access", { target_station_id: t.from_station_id }),
@@ -108,6 +113,7 @@ export default async function TransferDetailPage({
               <th className="px-4 py-2">Excess held</th>
               <th className="px-4 py-2">Short</th>
               <th className="px-4 py-2">Missing</th>
+              {showUnexplained && <th className="px-4 py-2">Unexplained</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-(--color-border)">
@@ -126,6 +132,7 @@ export default async function TransferDetailPage({
                 <td className="px-4 py-2">{item.quantity_excess_held || "—"}</td>
                 <td className="px-4 py-2">{item.quantity_short || "—"}</td>
                 <td className="px-4 py-2">{item.quantity_missing || "—"}</td>
+                {showUnexplained && <td className="px-4 py-2">{unexplained(item) || "—"}</td>}
               </tr>
             ))}
           </tbody>
