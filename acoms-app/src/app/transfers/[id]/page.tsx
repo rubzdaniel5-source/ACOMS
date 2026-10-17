@@ -32,7 +32,7 @@ export default async function TransferDetailPage({
 
   if (error || !transfer) {
     return (
-      <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6">
+      <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6">
         <p className="alert alert-danger">
           {error?.message ?? "Transfer not found."}
         </p>
@@ -47,9 +47,13 @@ export default async function TransferDetailPage({
   const transferItems = (items ?? []) as unknown as EquipmentTransferItem[];
   const { data: holdRows } = await supabase.from("v_excess_holds").select("*").eq("transfer_id", id).order("created_at");
   const holds = (holdRows ?? []) as unknown as ExcessHoldRow[];
+  const [srcAccess, dstAccess] = await Promise.all([
+    supabase.rpc("auth_has_station_access", { target_station_id: t.from_station_id }),
+    supabase.rpc("auth_has_station_access", { target_station_id: t.to_station_id }),
+  ]);
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-3 py-6 sm:px-6">
+    <div className="mx-auto w-full max-w-5xl px-3 py-6 sm:px-6">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-(--color-text)">{t.transfer_number}</h1>
@@ -135,6 +139,9 @@ export default async function TransferDetailPage({
         items={transferItems}
         permissions={Array.from(permissions)}
         currentUserId={currentUserId}
+        atSource={srcAccess.data === true}
+        atDestination={dstAccess.data === true}
+        openExcess={holds.some((h) => h.status === "HELD" || h.status === "INVESTIGATING")}
       />
     </div>
   );

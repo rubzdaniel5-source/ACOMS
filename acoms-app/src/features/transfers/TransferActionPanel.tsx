@@ -20,6 +20,10 @@ interface Props {
   items: EquipmentTransferItem[];
   permissions: string[];
   currentUserId: string | null;
+  /** Convenience only; the database still decides. Hides actions that belong to the other station. */
+  atSource: boolean;
+  atDestination: boolean;
+  openExcess: boolean;
 }
 
 /**
@@ -30,7 +34,7 @@ interface Props {
  * itself. A user could bypass this panel entirely and the database would
  * still refuse an invalid action.
  */
-export function TransferActionPanel({ transfer, items, permissions, currentUserId }: Props) {
+export function TransferActionPanel({ transfer, items, permissions, currentUserId, atSource, atDestination, openExcess }: Props) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -172,7 +176,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
         </div>
       )}
 
-      {transfer.status === "APPROVED" && has("dispatch_transfer") && (
+      {transfer.status === "APPROVED" && has("dispatch_transfer") && atSource && (
         <div className="space-y-3">
           <p className="text-xs text-(--color-text-subtle)">Confirm actual dispatched quantities:</p>
           {items.map((it) => (
@@ -213,7 +217,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
         </div>
       )}
 
-      {(transfer.status === "IN_TRANSIT" || transfer.status === "PARTIALLY_RECEIVED") && has("receive_transfer") && (
+      {(transfer.status === "IN_TRANSIT" || transfer.status === "PARTIALLY_RECEIVED") && has("receive_transfer") && atDestination && (
         <div className="space-y-3">
           <p className="text-xs text-(--color-text-subtle)">
             Count what is physically in front of you. Leave nothing pre-filled: enter the units you counted and,
@@ -225,7 +229,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
               <div key={it.id} className="grid grid-cols-[1fr_6rem_6rem] items-end gap-2 text-sm">
                 <div>
                   <div>{it.equipment_type?.source_code} — {it.equipment_type?.name}</div>
-                  {done > 0 && <div className="text-xs text-(--color-text-subtle)">Already received: {done}</div>}
+                  {done > 0 && <div className="text-xs text-(--color-text-subtle)">Already counted: {done}</div>}
                 </div>
                 <div>
                   <label className="text-xs text-(--color-text-subtle)">Counted</label>
@@ -287,7 +291,12 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
           </p>
           {items.map((it) => (
             <div key={it.id} className="grid grid-cols-3 gap-2 text-sm">
-              <span className="col-span-1 self-center">{it.equipment_type?.source_code}</span>
+              <span className="col-span-1 self-center">
+                {it.equipment_type?.source_code}
+                <span className="block text-xs text-(--color-text-subtle)">
+                  Short {it.quantity_short ?? 0}; damaged on receipt {it.quantity_damaged_on_receipt ?? 0} (already recorded)
+                </span>
+              </span>
               <div>
                 <label className="text-xs text-(--color-text-subtle)">Damaged</label>
                 <input
@@ -357,8 +366,9 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
       {transfer.status === "DISCREPANCY" && has("reconcile_transfer") && (
         <div className="space-y-3">
           <p className="text-xs text-(--color-danger)">
-            This transfer has an unexplained discrepancy beyond tolerance. It cannot be closed until
-            resolved with a documented reason.
+            {openExcess
+              ? "Excess units counted at receipt are still held. Investigate and authorise them (above) before this can be resolved."
+              : "This transfer has an unexplained discrepancy beyond tolerance. It cannot be closed until resolved with a documented reason."}
           </p>
           <textarea
             value={reasonText}
@@ -368,7 +378,7 @@ export function TransferActionPanel({ transfer, items, permissions, currentUserI
             className="min-h-11 w-full px-3 py-2 text-sm"
           />
           <button
-            disabled={pending || reasonText.trim().length === 0}
+            disabled={pending || openExcess || reasonText.trim().length === 0}
             onClick={() => run(() => resolveDiscrepancyAction(transfer.id, reasonText))}
             className="btn-primary min-h-11 px-5 text-sm"
           >
